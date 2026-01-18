@@ -65,6 +65,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('technicians/{technician}/toggle-active', [TechnicianController::class, 'toggleActive'])
         ->name('technicians.toggleActive');
     
+    // Vendor/Supplier Management
+    Route::resource('vendors', \App\Http\Controllers\VendorController::class);
+    
+    // Asset Management
+    Route::resource('assets', \App\Http\Controllers\AssetController::class);
+    
     // Customer Management
     Route::patch('customers/{customer}/status', [CustomerController::class, 'updateStatus'])
         ->name('customers.updateStatus');
@@ -133,10 +139,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('olts', \App\Http\Controllers\Network\OltController::class);
         Route::get('monitoring', [\App\Http\Controllers\Network\NetworkMonitoringController::class, 'index'])->name('monitoring.index');
         Route::post('monitoring/ping', [\App\Http\Controllers\Network\NetworkMonitoringController::class, 'ping'])->name('monitoring.ping');
-    });
+        
+        // Routers / Mikrotik
+        Route::resource('routers', \App\Http\Controllers\Network\RouterController::class);
+        Route::post('routers/{router}/sync', [\App\Http\Controllers\Network\RouterController::class, 'sync'])->name('routers.sync');
+        Route::post('routers/{router}/test', [\App\Http\Controllers\Network\RouterController::class, 'testConnection'])->name('routers.test');
+        
+        // IP Address Management (IPAM)
+        Route::get('ipam', [\App\Http\Controllers\Network\IpamController::class, 'index'])->name('ipam.index');
+        Route::get('ipam/pools/create', [\App\Http\Controllers\Network\IpamController::class, 'createPool'])->name('ipam.pools.create');
+        Route::post('ipam/pools', [\App\Http\Controllers\Network\IpamController::class, 'storePool'])->name('ipam.pools.store');
+        Route::delete('ipam/pools/{pool}', [\App\Http\Controllers\Network\IpamController::class, 'destroyPool'])->name('ipam.pools.destroy');
+        Route::post('ipam/allocate', [\App\Http\Controllers\Network\IpamController::class, 'allocate'])->name('ipam.allocate');
+        Route::post('ipam/release/{address}', [\App\Http\Controllers\Network\IpamController::class, 'release'])->name('ipam.release');
+        
+        // Bandwidth Management
+        Route::resource('bandwidth', \App\Http\Controllers\Network\BandwidthController::class);
+        
+        // Network Topology
+        Route::get('topology', [\App\Http\Controllers\Network\TopologyController::class, 'index'])->name('topology.index');
+        Route::get('topology/data', [\App\Http\Controllers\Network\TopologyController::class, 'data'])->name('topology.data');
+    }); // End of Network Group
     
+    // HRD & Internal Routes
+    Route::middleware(['role:super-admin|admin'])->group(function () {
+        // Attendance
+        Route::resource('attendance', \App\Http\Controllers\AttendanceController::class);
+        Route::post('attendance/clock-in', [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clockIn');
+        Route::post('attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clockOut');
+
+        // Payroll
+        Route::resource('payroll', \App\Http\Controllers\PayrollController::class);
+        Route::patch('payroll/{payroll}/approve', [\App\Http\Controllers\PayrollController::class, 'approve'])->name('payroll.approve');
+        Route::patch('payroll/{payroll}/paid', [\App\Http\Controllers\PayrollController::class, 'markPaid'])->name('payroll.markPaid');
+    });
+
     // Payment Manual & Gateway
     Route::resource('payments', PaymentController::class);
+    
+
     Route::post('payment/{invoice}/create', [PaymentController::class, 'createTransaction'])
         ->name('payment.create');
 });

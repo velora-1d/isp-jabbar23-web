@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('routers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('ip_address');
+            $table->integer('port')->default(8728);
+            $table->string('username')->default('admin');
+            $table->string('password')->nullable();
+            $table->enum('type', ['mikrotik', 'cisco', 'ubiquiti', 'other'])->default('mikrotik');
+            $table->enum('status', ['online', 'offline', 'unknown'])->default('unknown');
+            $table->string('identity')->nullable();
+            $table->string('version')->nullable();
+            $table->string('model')->nullable();
+            $table->timestamp('last_sync_at')->nullable();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('routers');
+    }
+};

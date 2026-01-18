@@ -13,8 +13,8 @@
 | Metric                       | Value  |
 | ---------------------------- | ------ |
 | Total Menus Planned          | **46** |
-| Currently Implemented        | **25** |
-| To Be Developed              | **21** |
+| Currently Implemented        | **33** |
+| To Be Developed              | **13** |
 | Total Roles                  | **8**  |
 | Estimated Development Phases | **4**  |
 
@@ -72,10 +72,10 @@
 | 13  | Network Monitoring    | `/network/monitoring` | `server`      | SA, NOC       | ✅ Done | -        |
 | 14  | OLT Management        | `/network/olt`        | `cube`        | SA, NOC       | ✅ Done | -        |
 | 15  | ODP/ODC Management    | `/network/odp`        | `map-pin`     | SA, NOC, Tech | ✅ Done | -        |
-| 16  | Routers/Mikrotik      | `/network/routers`    | `wifi`        | SA, NOC       | ❌ Todo | P2       |
-| 17  | IP Address Management | `/network/ipam`       | `globe`       | SA, NOC       | ❌ Todo | P2       |
-| 18  | Bandwidth Management  | `/network/bandwidth`  | `adjustments` | SA, NOC       | ❌ Todo | P3       |
-| 19  | Network Topology      | `/network/topology`   | `share`       | SA, NOC, Tech | ❌ Todo | P3       |
+| 16  | Routers/Mikrotik      | `/network/routers`    | `wifi`        | SA, NOC       | ✅ Done | -        |
+| 17  | IP Address Management | `/network/ipam`       | `globe`       | SA, NOC       | ✅ Done | -        |
+| 18  | Bandwidth Management  | `/network/bandwidth`  | `adjustments` | SA, NOC       | ✅ Done | -        |
+| 19  | Network Topology      | `/network/topology`   | `share`       | SA, NOC, Tech | ✅ Done | -        |
 
 ---
 
@@ -107,8 +107,8 @@
 | #   | Menu Name         | Route              | Icon               | Roles                  | Status  | Priority |
 | --- | ----------------- | ------------------ | ------------------ | ---------------------- | ------- | -------- |
 | 29  | Inventory         | `/inventory`       | `archive`          | SA, Warehouse          | ✅ Done | -        |
-| 30  | Assets            | `/assets`          | `desktop-computer` | SA, Warehouse          | ❌ Todo | P2       |
-| 31  | Suppliers/Vendors | `/suppliers`       | `truck`            | SA, Warehouse          | ❌ Todo | P2       |
+| 30  | Assets            | `/assets`          | `desktop-computer` | SA, Warehouse          | ✅ Done | -        |
+| 31  | Suppliers/Vendors | `/vendors`         | `truck`            | SA, Warehouse          | ✅ Done | -        |
 | 32  | Purchase Orders   | `/purchase-orders` | `shopping-cart`    | SA, Warehouse, Finance | ❌ Todo | P2       |
 
 ---
@@ -118,8 +118,8 @@
 | #   | Menu Name        | Route         | Icon           | Roles            | Status                | Priority |
 | --- | ---------------- | ------------- | -------------- | ---------------- | --------------------- | -------- |
 | 33  | Employees        | `/employees`  | `users`        | SA, HRD          | ✅ Done (as Karyawan) | -        |
-| 34  | Attendance       | `/attendance` | `finger-print` | SA, HRD          | ❌ Todo               | P2       |
-| 35  | Payroll          | `/payroll`    | `cash`         | SA, HRD, Finance | ❌ Todo               | P2       |
+| 34  | Attendance       | `/attendance` | `finger-print` | SA, HRD          | ✅ Done               | -        |
+| 35  | Payroll          | `/payroll`    | `cash`         | SA, HRD, Finance | ✅ Done               | -        |
 | 36  | Leave Management | `/leave`      | `calendar`     | SA, HRD          | ❌ Todo               | P3       |
 
 ---

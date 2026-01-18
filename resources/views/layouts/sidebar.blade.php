@@ -82,16 +82,16 @@
             <x-menu-item route="network.odps.index" label="ODP Management" color-from="teal-500" color-to="emerald-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="network.routers" label="Routers/Mikrotik" :soon="true" color-from="emerald-500" color-to="green-600">
+            <x-menu-item route="network.routers.index" label="Routers/Mikrotik" color-from="emerald-500" color-to="green-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="network.ipam" label="IP Management" :soon="true" color-from="green-500" color-to="lime-600">
+            <x-menu-item route="network.ipam.index" label="IP Management" color-from="green-500" color-to="lime-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="network.bandwidth" label="Bandwidth" :soon="true" color-from="lime-500" color-to="yellow-600">
+            <x-menu-item route="network.bandwidth.index" label="Bandwidth" color-from="lime-500" color-to="yellow-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="network.topology" label="Topology Map" :soon="true" color-from="yellow-500" color-to="amber-600">
+            <x-menu-item route="network.topology.index" label="Topology Map" color-from="yellow-500" color-to="amber-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg></x-slot:icon>
             </x-menu-item>
          </div>
@@ -160,10 +160,10 @@
             <x-menu-item route="inventory.index" label="Stock Items" color-from="yellow-500" color-to="amber-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="assets.index" label="Assets" :soon="true" color-from="amber-500" color-to="orange-600">
+            <x-menu-item route="assets.index" label="Assets" color-from="amber-500" color-to="orange-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="suppliers.index" label="Suppliers" :soon="true" color-from="orange-500" color-to="red-600">
+            <x-menu-item route="vendors.index" label="Vendors" color-from="orange-500" color-to="red-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg></x-slot:icon>
             </x-menu-item>
             <x-menu-item route="purchase-orders.index" label="Purchase Orders" :soon="true" color-from="red-500" color-to="rose-600">
@@ -184,10 +184,10 @@
             <x-menu-item route="users.index" label="Employees" color-from="rose-500" color-to="pink-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="attendance.index" label="Attendance" :soon="true" color-from="pink-500" color-to="fuchsia-600">
+            <x-menu-item route="attendance.index" label="Attendance" color-from="pink-500" color-to="fuchsia-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg></x-slot:icon>
             </x-menu-item>
-            <x-menu-item route="payroll.index" label="Payroll" :soon="true" color-from="fuchsia-500" color-to="purple-600">
+            <x-menu-item route="payroll.index" label="Payroll" color-from="fuchsia-500" color-to="purple-600">
                <x-slot:icon><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg></x-slot:icon>
             </x-menu-item>
             <x-menu-item route="leave.index" label="Leave Management" :soon="true" color-from="purple-500" color-to="indigo-600">
