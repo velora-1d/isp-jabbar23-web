@@ -89,7 +89,3 @@ Kami menyarankan peluncuran bertahap:
 
     *   Hubungkan API MikroTik.
     *   Fitur Isolir Otomatis dijalankan.
-
----
-
-_Dibuat oleh AI Assistant - 19 Januari 2026_

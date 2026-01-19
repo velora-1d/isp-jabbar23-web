@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Customer;
+use App\Services\FonnteService;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    public function __construct()
+    protected $fonnteService;
+
+    public function __construct(FonnteService $fonnteService)
     {
         $this->middleware('role:super-admin|admin|sales');
+        $this->fonnteService = $fonnteService;
     }
 
     public function index(Request $request)
@@ -33,10 +37,10 @@ class MessageController extends Controller
         $messages = $query->paginate(25);
 
         $stats = [
-            'total' => Message::count(),
-            'today' => Message::whereDate('created_at', today())->count(),
-            'inbound' => Message::where('direction', 'inbound')->whereDate('created_at', today())->count(),
-            'outbound' => Message::where('direction', 'outbound')->whereDate('created_at', today())->count(),
+            'total' => Message::count('*'),
+            'today' => Message::whereDate('created_at', '=', today())->count('*'),
+            'inbound' => Message::where('direction', '=', 'inbound')->whereDate('created_at', '=', today())->count('*'),
+            'outbound' => Message::where('direction', '=', 'outbound')->whereDate('created_at', '=', today())->count('*'),
         ];
 
         $customers = Customer::where('status', 'active')->orderBy('name')->get(['id', 'name']);
@@ -64,7 +68,13 @@ class MessageController extends Controller
 
         Message::create($validated);
 
-        // TODO: Integrate with actual messaging gateway (Fonnte, etc.)
+        // Send via Fonnte if channel is whatsapp
+        if ($validated['channel'] === 'whatsapp') {
+            $customer = Customer::find($request->customer_id);
+            if ($customer && $customer->phone) {
+                $this->fonnteService->sendMessage($customer->phone, $validated['content']);
+            }
+        }
 
         return redirect()->route('messages.index')
             ->with('success', 'Pesan berhasil dikirim!');
@@ -92,6 +102,14 @@ class MessageController extends Controller
         $validated['status'] = 'sent';
 
         Message::create($validated);
+
+        // Send via Fonnte if channel is whatsapp
+        if ($validated['channel'] === 'whatsapp') {
+            $customer = Customer::find($request->customer_id);
+            if ($customer && $customer->phone) {
+                $this->fonnteService->sendMessage($customer->phone, $validated['content']);
+            }
+        }
 
         return back()->with('success', 'Pesan terkirim!');
     }
