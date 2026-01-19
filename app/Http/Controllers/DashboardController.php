@@ -97,8 +97,8 @@ class DashboardController extends Controller
         // Revenue stats
         $totalRevenue = Payment::where('status', 'confirmed')->sum('amount');
         $revenueThisMonth = Payment::where('status', 'confirmed')
-            ->whereMonth('payment_date', date('m'))
-            ->whereYear('payment_date', date('Y'))
+            ->whereMonth('paid_at', date('m'))
+            ->whereYear('paid_at', date('Y'))
             ->sum('amount');
             
         // Invoice stats
@@ -119,8 +119,8 @@ class DashboardController extends Controller
             
         // Revenue chart data (last 6 months)
         $revenueChart = Payment::where('status', 'confirmed')
-            ->where('payment_date', '>=', now()->subMonths(6))
-            ->selectRaw('MONTH(payment_date) as month, YEAR(payment_date) as year, SUM(amount) as total')
+            ->where('paid_at', '>=', now()->subMonths(6))
+            ->selectRaw('MONTH(paid_at) as month, YEAR(paid_at) as year, SUM(amount) as total')
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -176,11 +176,11 @@ class DashboardController extends Controller
         // Revenue stats
         $totalRevenue = Payment::where('status', 'confirmed')->sum('amount');
         $revenueThisMonth = Payment::where('status', 'confirmed')
-            ->whereMonth('payment_date', date('m'))
-            ->whereYear('payment_date', date('Y'))
+            ->whereMonth('paid_at', date('m'))
+            ->whereYear('paid_at', date('Y'))
             ->sum('amount');
         $revenueToday = Payment::where('status', 'confirmed')
-            ->whereDate('payment_date', today())
+            ->whereDate('paid_at', today())
             ->sum('amount');
             
         // Invoice stats
@@ -195,15 +195,15 @@ class DashboardController extends Controller
             
         // Payment method breakdown
         $paymentMethods = Payment::where('status', 'confirmed')
-            ->whereMonth('payment_date', date('m'))
+            ->whereMonth('paid_at', date('m'))
             ->selectRaw('payment_method, COUNT(*) as count, SUM(amount) as total')
             ->groupBy('payment_method')
             ->get();
             
         // Revenue chart (last 6 months)
         $revenueChart = Payment::where('status', 'confirmed')
-            ->where('payment_date', '>=', now()->subMonths(6))
-            ->selectRaw('MONTH(payment_date) as month, YEAR(payment_date) as year, SUM(amount) as total')
+            ->where('paid_at', '>=', now()->subMonths(6))
+            ->selectRaw('MONTH(paid_at) as month, YEAR(paid_at) as year, SUM(amount) as total')
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -212,7 +212,7 @@ class DashboardController extends Controller
         // Recent payments
         $recentPayments = Payment::with('customer')
             ->where('status', 'confirmed')
-            ->latest('payment_date')
+            ->latest('paid_at')
             ->take(5)
             ->get();
             
