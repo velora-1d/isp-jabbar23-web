@@ -45,6 +45,7 @@ class Customer extends Model
         'latitude',
         'longitude',
         'package_id',
+        'partner_id',
         'assigned_to',
         'team_size',
         'status',
@@ -115,6 +116,14 @@ class Customer extends Model
     public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
+    }
+
+    /**
+     * Get the partner who referred this customer.
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 
     /**

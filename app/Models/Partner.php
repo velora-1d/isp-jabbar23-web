@@ -31,4 +31,12 @@ class Partner extends Model
     {
         return $this->status === 'active' ? 'Aktif' : 'Non-Aktif';
     }
+
+    /**
+     * Get customers referred by this partner.
+     */
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
 }
