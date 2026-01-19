@@ -187,10 +187,10 @@ class ReportController extends Controller
     public function network(Request $request): View
     {
         $odpStats = [
-            'total' => Odp::query()->count(['*']),
-            'active' => Odp::query()->where('status', '=', 'active')->count(['*']),
-            'full' => Odp::query()->where('status', '=', 'full')->count(['*']),
-            'maintenance' => Odp::query()->where('status', '=', 'maintenance')->count(['*']),
+            'total' => Odp::query()->count('*'),
+            'available' => Odp::query()->where('status', '=', 'active')->count('*'),
+            'full' => Odp::query()->where('status', '=', 'full')->count('*'),
+            'maintenance' => Odp::query()->where('status', '=', 'maintenance')->count('*'),
         ];
 
         $oltStats = [
