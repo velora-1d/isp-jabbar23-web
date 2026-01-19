@@ -164,15 +164,15 @@ class ReportController extends Controller
             ->get(['*']);
 
         $topCustomers = Customer::query()
-            ->select(['customers.*', DB::raw('COALESCE(SUM(payments.amount), 0) as total_paid')])
+            ->select(['customers.id', 'customers.name', 'customers.email', DB::raw('COALESCE(SUM(payments.amount), 0) as total_paid')])
             ->leftJoin('payments', function ($join) {
                 $join->on('customers.id', '=', 'payments.customer_id')
                      ->where('payments.status', '=', 'confirmed');
             })
-            ->groupBy('customers.id')
+            ->groupBy('customers.id', 'customers.name', 'customers.email')
             ->orderByDesc('total_paid')
             ->limit(10)
-            ->get(['*']);
+            ->get();
 
         return view('reports.customers', compact(
             'totalCustomers', 'activeCustomers', 'newCustomers', 'churnedCustomers',

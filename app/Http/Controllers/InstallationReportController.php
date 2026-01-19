@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InstallationReport;
 use App\Models\WorkOrder;
-use App\Models\Technician;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class InstallationReportController extends Controller
@@ -43,7 +43,7 @@ class InstallationReportController extends Controller
             'this_month' => InstallationReport::whereMonth('installation_date', now()->month)->count(),
         ];
 
-        $technicians = Technician::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $technicians = User::role('noc')->where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
         return view('field.installation-reports.index', compact('reports', 'stats', 'technicians'));
     }

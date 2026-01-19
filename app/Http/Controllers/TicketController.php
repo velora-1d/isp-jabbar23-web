@@ -38,7 +38,7 @@ class TicketController extends Controller
         }
 
         $tickets = $query->paginate(10)->withQueryString();
-        $technicians = User::role('Teknisi Lapangan')->orderBy('name')->get();
+        $technicians = User::role('noc')->orderBy('name')->get();
         
         // Stats
         $stats = [
@@ -56,7 +56,7 @@ class TicketController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('name')->get();
-        $technicians = User::role('Teknisi Lapangan')->orderBy('name')->get();
+        $technicians = User::role('noc')->orderBy('name')->get();
         return view('tickets.create', compact('customers', 'technicians'));
     }
 
@@ -83,7 +83,7 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
-        $technicians = User::role('Teknisi Lapangan')->orderBy('name')->get();
+        $technicians = User::role('noc')->orderBy('name')->get();
         return view('tickets.show', compact('ticket', 'technicians'));
     }
 

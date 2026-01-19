@@ -15,7 +15,7 @@ class TrackingController extends Controller
 
     public function index()
     {
-        $technicians = User::role('Teknisi Lapangan')
+        $technicians = User::role('noc')
             ->where('is_active', true)
             ->get();
 

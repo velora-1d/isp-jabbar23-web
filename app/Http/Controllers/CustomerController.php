@@ -74,7 +74,7 @@ class CustomerController extends Controller
     {
         $packages = Package::active()->get();
         $statuses = Customer::STATUSES;
-        $technicians = User::role('Teknisi Lapangan')->orderBy('name')->get();
+        $technicians = User::role('noc')->orderBy('name')->get();
         return view('customers.create', compact('packages', 'statuses', 'technicians'));
     }
 
@@ -130,7 +130,7 @@ class CustomerController extends Controller
     {
         $packages = Package::active()->get();
         $statuses = Customer::STATUSES;
-        $technicians = User::role('Teknisi Lapangan')->orderBy('name')->get();
+        $technicians = User::role('noc')->orderBy('name')->get();
         return view('customers.edit', compact('customer', 'packages', 'statuses', 'technicians'));
     }
 

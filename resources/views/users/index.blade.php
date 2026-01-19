@@ -96,7 +96,7 @@
                                         @php
                                             $colors = [
                                                 'Super Admin' => 'from-red-500 to-rose-600',
-                                                'Teknisi Lapangan' => 'from-amber-500 to-orange-600',
+                                                'noc' => 'from-amber-500 to-orange-600',
                                                 'Sales & CS' => 'from-emerald-500 to-teal-600',
                                                 'Finance' => 'from-cyan-500 to-teal-600',
                                                 'Admin NOC' => 'from-cyan-500 to-blue-600',

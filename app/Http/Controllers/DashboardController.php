@@ -12,7 +12,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         // Redirect Technician to their own dashboard
-        if ($request->user() && $request->user()->hasRole('Teknisi Lapangan')) {
+        if ($request->user() && $request->user()->hasRole('noc')) {
             return app(\App\Http\Controllers\TechnicianController::class)->dashboard($request);
         }
 

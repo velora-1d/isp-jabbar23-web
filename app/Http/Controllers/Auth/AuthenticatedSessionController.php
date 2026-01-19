@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($user->hasRole('Teknisi Lapangan')) {
+        if ($user->hasRole('noc')) {
             // Future implementation: return redirect()->route('technician.dashboard');
             return redirect()->intended(route('dashboard', absolute: false));
         }
