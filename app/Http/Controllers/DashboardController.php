@@ -2,230 +2,371 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Partner;
-use App\Models\SyncMapping;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Partner;
 use App\Models\Payment;
+use App\Models\SyncMapping;
 use App\Models\Ticket;
-use App\Models\WorkOrder;
 use App\Models\User;
-use App\Models\Odp;
-use App\Models\Olt;
+use App\Models\WorkOrder;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Display the dashboard based on user role.
+     */
+    public function index(Request $request): View|RedirectResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-        
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
         // Redirect NOC/Technician to their own dashboard
-        if ($user && $user->hasRole('noc')) {
-            return app(\App\Http\Controllers\TechnicianController::class)->dashboard($request);
+        if ($user->hasRole('noc')) {
+            return app(TechnicianController::class)->dashboard($request);
         }
 
         // Base data for all roles
         $baseData = $this->getBaseData($request);
-        
+
         // Role-specific data
-        $roleData = [];
-        
-        if ($user->hasAnyRole(['super-admin', 'admin'])) {
-            $roleData = $this->getAdminDashboardData($request);
-        } elseif ($user->hasRole('sales')) {
-            $roleData = $this->getSalesDashboardData($request);
-        } elseif ($user->hasRole('finance')) {
-            $roleData = $this->getFinanceDashboardData($request);
-        } elseif ($user->hasRole('warehouse')) {
-            $roleData = $this->getWarehouseDashboardData($request);
-        } elseif ($user->hasRole('hrd')) {
-            $roleData = $this->getHrdDashboardData($request);
-        }
-        
-        return view('dashboard', array_merge($baseData, $roleData, ['userRole' => $user->roles->first()->name ?? 'user']));
+        $roleData = $this->getRoleSpecificData($user, $request);
+
+        $userRole = $user->roles->first()?->name ?? 'user';
+
+        return view('dashboard', array_merge($baseData, $roleData, ['userRole' => $userRole]));
     }
-    
+
+    /**
+     * Get role-specific dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getRoleSpecificData(User $user, Request $request): array
+    {
+        if ($user->hasAnyRole(['super-admin', 'admin'])) {
+            return $this->getAdminDashboardData();
+        }
+
+        if ($user->hasRole('sales')) {
+            return $this->getSalesDashboardData($user);
+        }
+
+        if ($user->hasRole('finance')) {
+            return $this->getFinanceDashboardData();
+        }
+
+        if ($user->hasRole('warehouse')) {
+            return $this->getWarehouseDashboardData();
+        }
+
+        if ($user->hasRole('hrd')) {
+            return $this->getHrdDashboardData();
+        }
+
+        return [];
+    }
+
+    /**
+     * Get base data shared across all roles.
+     *
+     * @return array<string, mixed>
+     */
     private function getBaseData(Request $request): array
     {
-        $queryPartners = Partner::query();
-        $queryCustomers = Customer::query();
+        $month = $request->input('month');
+        $year = $request->input('year');
 
-        if ($request->filled('month')) {
-            $queryPartners->whereMonth('created_at', $request->month);
-            $queryCustomers->whereMonth('created_at', $request->month);
+        // Build partner query
+        $partnerQuery = Partner::query();
+        if ($month) {
+            $partnerQuery->whereMonth('created_at', '=', (int) $month);
         }
-        
-        if ($request->filled('year')) {
-            $queryPartners->whereYear('created_at', $request->year);
-            $queryCustomers->whereYear('created_at', $request->year);
+        if ($year) {
+            $partnerQuery->whereYear('created_at', '=', (int) $year);
         }
 
-        $totalPartners = $queryPartners->count();
-        $totalCustomers = $queryCustomers->count();
-        $activeCustomers = (clone $queryCustomers)->where('status', 'active')->count();
-        $suspendedCustomers = (clone $queryCustomers)->where('status', 'suspended')->count();
-        
-        $newPartnersThisMonth = Partner::whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->count();
-            
-        $newCustomersThisMonth = Customer::whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->count();
+        // Build customer query
+        $customerQuery = Customer::query();
+        if ($month) {
+            $customerQuery->whereMonth('created_at', '=', (int) $month);
+        }
+        if ($year) {
+            $customerQuery->whereYear('created_at', '=', (int) $year);
+        }
 
-        $latestPartners = Partner::latest()->take(5)->get();
+        $totalPartners = $partnerQuery->count('*');
+        $totalCustomers = $customerQuery->count('*');
 
-        $partnerYears = Partner::selectRaw('YEAR(created_at) as year')->distinct()->pluck('year')->toArray();
-        $customerYears = Customer::selectRaw('YEAR(created_at) as year')->distinct()->pluck('year')->toArray();
+        $activeQuery = clone $customerQuery;
+        $suspendedQuery = clone $customerQuery;
+
+        $activeCustomers = $activeQuery->where('status', '=', 'active')->count('*');
+        $suspendedCustomers = $suspendedQuery->where('status', '=', 'suspended')->count('*');
+
+        $currentMonth = (int) date('m');
+        $currentYear = (int) date('Y');
+
+        $newPartnersThisMonth = Partner::whereMonth('created_at', '=', $currentMonth)
+            ->whereYear('created_at', '=', $currentYear)
+            ->count('*');
+
+        $newCustomersThisMonth = Customer::whereMonth('created_at', '=', $currentMonth)
+            ->whereYear('created_at', '=', $currentYear)
+            ->count('*');
+
+        $latestPartners = Partner::query()
+            ->latest('created_at')
+            ->take(5)
+            ->get();
+
+        $years = $this->getAvailableYears();
+
+        return [
+            'totalPartners' => $totalPartners,
+            'totalCustomers' => $totalCustomers,
+            'activeCustomers' => $activeCustomers,
+            'suspendedCustomers' => $suspendedCustomers,
+            'latestPartners' => $latestPartners,
+            'years' => $years,
+            'newPartnersThisMonth' => $newPartnersThisMonth,
+            'newCustomersThisMonth' => $newCustomersThisMonth,
+        ];
+    }
+
+    /**
+     * Get available years for filter dropdown.
+     *
+     * @return array<int>
+     */
+    private function getAvailableYears(): array
+    {
+        $partnerYears = Partner::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->pluck('year')
+            ->filter()
+            ->toArray();
+
+        $customerYears = Customer::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->pluck('year')
+            ->filter()
+            ->toArray();
+
         $years = array_unique(array_merge($partnerYears, $customerYears));
         rsort($years);
-        if (empty($years)) {
-            $years = [date('Y')];
-        }
 
-        return compact(
-            'totalPartners', 'totalCustomers', 'activeCustomers', 'suspendedCustomers',
-            'latestPartners', 'years', 'newPartnersThisMonth', 'newCustomersThisMonth'
-        );
+        return empty($years) ? [(int) date('Y')] : $years;
     }
-    
-    private function getAdminDashboardData(Request $request): array
+
+    /**
+     * Get admin/super-admin dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getAdminDashboardData(): array
     {
+        $currentMonth = (int) date('m');
+        $currentYear = (int) date('Y');
+
         // Revenue stats
-        $totalRevenue = Payment::where('status', 'confirmed')->sum('amount');
-        $revenueThisMonth = Payment::where('status', 'confirmed')
-            ->whereMonth('paid_at', date('m'))
-            ->whereYear('paid_at', date('Y'))
+        $totalRevenue = Payment::where('status', '=', 'confirmed')->sum('amount');
+
+        $revenueThisMonth = Payment::where('status', '=', 'confirmed')
+            ->whereMonth('paid_at', '=', $currentMonth)
+            ->whereYear('paid_at', '=', $currentYear)
             ->sum('amount');
-            
+
         // Invoice stats
-        $unpaidInvoices = Invoice::where('status', 'unpaid')->count();
-        $overdueInvoices = Invoice::where('status', 'unpaid')
+        $unpaidInvoices = Invoice::where('status', '=', 'unpaid')->count('*');
+
+        $overdueInvoices = Invoice::where('status', '=', 'unpaid')
             ->where('due_date', '<', now())
-            ->count();
-            
+            ->count('*');
+
         // Ticket stats
-        $openTickets = Ticket::where('status', 'open')->count();
-        $inProgressTickets = Ticket::where('status', 'in_progress')->count();
-        
+        $openTickets = Ticket::where('status', '=', 'open')->count('*');
+        $inProgressTickets = Ticket::where('status', '=', 'in_progress')->count('*');
+
         // Work order stats
-        $pendingWorkOrders = WorkOrder::whereNotIn('status', ['completed', 'cancelled'])->count();
-        $completedWorkOrders = WorkOrder::where('status', 'completed')
-            ->whereMonth('created_at', date('m'))
-            ->count();
-            
+        $pendingWorkOrders = WorkOrder::whereNotIn('status', ['completed', 'cancelled'])->count('*');
+
+        $completedWorkOrders = WorkOrder::where('status', '=', 'completed')
+            ->whereMonth('created_at', '=', $currentMonth)
+            ->count('*');
+
         // Revenue chart data (last 6 months)
-        $revenueChart = Payment::where('status', 'confirmed')
+        $revenueChart = Payment::where('status', '=', 'confirmed')
             ->where('paid_at', '>=', now()->subMonths(6))
             ->selectRaw('MONTH(paid_at) as month, YEAR(paid_at) as year, SUM(amount) as total')
             ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
             ->get();
-            
+
         // Customer growth chart (last 6 months)
         $customerGrowth = Customer::where('created_at', '>=', now()->subMonths(6))
             ->selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, COUNT(*) as total')
             ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
             ->get();
-            
-        return compact(
-            'totalRevenue', 'revenueThisMonth', 'unpaidInvoices', 'overdueInvoices',
-            'openTickets', 'inProgressTickets', 'pendingWorkOrders', 'completedWorkOrders',
-            'revenueChart', 'customerGrowth'
-        );
-    }
-    
-    private function getSalesDashboardData(Request $request): array
-    {
-        // Customer acquisition stats
-        $newCustomersToday = Customer::whereDate('created_at', today())->count();
-        $newCustomersThisWeek = Customer::where('created_at', '>=', now()->startOfWeek())->count();
-        $newCustomersThisMonth = Customer::whereMonth('created_at', date('m'))
-            ->whereYear('created_at', date('Y'))
-            ->count();
-            
-        // Lead conversion (customers by status)
-        $leadStats = [
-            'registered' => Customer::where('status', 'registered')->count(),
-            'survey' => Customer::where('status', 'survey')->count(),
-            'approved' => Customer::where('status', 'approved')->count(),
-            'active' => Customer::where('status', 'active')->count(),
+
+        return [
+            'totalRevenue' => $totalRevenue,
+            'revenueThisMonth' => $revenueThisMonth,
+            'unpaidInvoices' => $unpaidInvoices,
+            'overdueInvoices' => $overdueInvoices,
+            'openTickets' => $openTickets,
+            'inProgressTickets' => $inProgressTickets,
+            'pendingWorkOrders' => $pendingWorkOrders,
+            'completedWorkOrders' => $completedWorkOrders,
+            'revenueChart' => $revenueChart,
+            'customerGrowth' => $customerGrowth,
         ];
-        
+    }
+
+    /**
+     * Get sales dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getSalesDashboardData(User $user): array
+    {
+        $currentMonth = (int) date('m');
+        $currentYear = (int) date('Y');
+
+        // Customer acquisition stats
+        $newCustomersToday = Customer::whereDate('created_at', '=', today())->count('*');
+
+        $newCustomersThisWeek = Customer::where('created_at', '>=', now()->startOfWeek())->count('*');
+
+        $newCustomersThisMonth = Customer::whereMonth('created_at', '=', $currentMonth)
+            ->whereYear('created_at', '=', $currentYear)
+            ->count('*');
+
+        // Lead conversion stats
+        $leadStats = [
+            'registered' => Customer::where('status', '=', 'registered')->count('*'),
+            'survey' => Customer::where('status', '=', 'survey')->count('*'),
+            'approved' => Customer::where('status', '=', 'approved')->count('*'),
+            'active' => Customer::where('status', '=', 'active')->count('*'),
+        ];
+
         // Ticket stats for CS
-        $openTickets = Ticket::where('status', 'open')->count();
-        $myTickets = Ticket::where('technician_id', auth()->user()?->id)->whereIn('status', ['open', 'in_progress'])->count();
-        
+        $openTickets = Ticket::where('status', '=', 'open')->count('*');
+
+        $myTickets = Ticket::where('technician_id', '=', $user->id)
+            ->whereIn('status', ['open', 'in_progress'])
+            ->count('*');
+
         // Recent customers
         $recentCustomers = Customer::with('package')
-            ->latest()
+            ->latest('created_at')
             ->take(5)
             ->get();
-            
-        return compact('newCustomersToday', 'newCustomersThisWeek', 'newCustomersThisMonth', 'leadStats', 'openTickets', 'myTickets', 'recentCustomers');
+
+        return [
+            'newCustomersToday' => $newCustomersToday,
+            'newCustomersThisWeek' => $newCustomersThisWeek,
+            'newCustomersThisMonth' => $newCustomersThisMonth,
+            'leadStats' => $leadStats,
+            'openTickets' => $openTickets,
+            'myTickets' => $myTickets,
+            'recentCustomers' => $recentCustomers,
+        ];
     }
-    
-    private function getFinanceDashboardData(Request $request): array
+
+    /**
+     * Get finance dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getFinanceDashboardData(): array
     {
+        $currentMonth = (int) date('m');
+        $currentYear = (int) date('Y');
+
         // Revenue stats
-        $totalRevenue = Payment::where('status', 'confirmed')->sum('amount');
-        $revenueThisMonth = Payment::where('status', 'confirmed')
-            ->whereMonth('paid_at', date('m'))
-            ->whereYear('paid_at', date('Y'))
+        $totalRevenue = Payment::where('status', '=', 'confirmed')->sum('amount');
+
+        $revenueThisMonth = Payment::where('status', '=', 'confirmed')
+            ->whereMonth('paid_at', '=', $currentMonth)
+            ->whereYear('paid_at', '=', $currentYear)
             ->sum('amount');
-        $revenueToday = Payment::where('status', 'confirmed')
-            ->whereDate('paid_at', today())
+
+        $revenueToday = Payment::where('status', '=', 'confirmed')
+            ->whereDate('paid_at', '=', today())
             ->sum('amount');
-            
+
         // Invoice stats
-        $totalUnpaid = Invoice::where('status', 'unpaid')->sum('total_amount');
-        $unpaidInvoices = Invoice::where('status', 'unpaid')->count();
-        $overdueInvoices = Invoice::where('status', 'unpaid')
+        $totalUnpaid = Invoice::where('status', '=', 'unpaid')->sum('total_amount');
+        $unpaidInvoices = Invoice::where('status', '=', 'unpaid')->count('*');
+
+        $overdueInvoices = Invoice::where('status', '=', 'unpaid')
             ->where('due_date', '<', now())
-            ->count();
-        $paidThisMonth = Invoice::where('status', 'paid')
-            ->whereMonth('updated_at', date('m'))
-            ->count();
-            
+            ->count('*');
+
+        $paidThisMonth = Invoice::where('status', '=', 'paid')
+            ->whereMonth('updated_at', '=', $currentMonth)
+            ->count('*');
+
         // Payment method breakdown
-        $paymentMethods = Payment::where('status', 'confirmed')
-            ->whereMonth('paid_at', date('m'))
+        $paymentMethods = Payment::where('status', '=', 'confirmed')
+            ->whereMonth('paid_at', '=', $currentMonth)
             ->selectRaw('payment_method, COUNT(*) as count, SUM(amount) as total')
             ->groupBy('payment_method')
             ->get();
-            
+
         // Revenue chart (last 6 months)
-        $revenueChart = Payment::where('status', 'confirmed')
+        $revenueChart = Payment::where('status', '=', 'confirmed')
             ->where('paid_at', '>=', now()->subMonths(6))
             ->selectRaw('MONTH(paid_at) as month, YEAR(paid_at) as year, SUM(amount) as total')
             ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
             ->get();
-            
+
         // Recent payments
         $recentPayments = Payment::with('customer')
-            ->where('status', 'confirmed')
+            ->where('status', '=', 'confirmed')
             ->latest('paid_at')
             ->take(5)
             ->get();
-            
-        return compact(
-            'totalRevenue', 'revenueThisMonth', 'revenueToday', 'totalUnpaid',
-            'unpaidInvoices', 'overdueInvoices', 'paidThisMonth', 'paymentMethods',
-            'revenueChart', 'recentPayments'
-        );
+
+        return [
+            'totalRevenue' => $totalRevenue,
+            'revenueThisMonth' => $revenueThisMonth,
+            'revenueToday' => $revenueToday,
+            'totalUnpaid' => $totalUnpaid,
+            'unpaidInvoices' => $unpaidInvoices,
+            'overdueInvoices' => $overdueInvoices,
+            'paidThisMonth' => $paidThisMonth,
+            'paymentMethods' => $paymentMethods,
+            'revenueChart' => $revenueChart,
+            'recentPayments' => $recentPayments,
+        ];
     }
-    
-    private function getWarehouseDashboardData(Request $request): array
+
+    /**
+     * Get warehouse dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getWarehouseDashboardData(): array
     {
-        // Since we don't have inventory models yet, return placeholder data
+        // Placeholder data - inventory module not yet implemented
         return [
             'totalItems' => 0,
             'lowStockItems' => 0,
@@ -233,20 +374,28 @@ class DashboardController extends Controller
             'totalAssets' => 0,
         ];
     }
-    
-    private function getHrdDashboardData(Request $request): array
+
+    /**
+     * Get HRD dashboard data.
+     *
+     * @return array<string, mixed>
+     */
+    private function getHrdDashboardData(): array
     {
-        // Employee stats
-        $totalEmployees = User::count();
-        $activeEmployees = User::where('is_active', true)->count();
-        
+        $totalEmployees = User::count('*');
+        $activeEmployees = User::where('is_active', '=', true)->count('*');
+
         // Role breakdown
         $roleBreakdown = DB::table('model_has_roles')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->selectRaw('roles.name, COUNT(*) as count')
             ->groupBy('roles.name')
             ->get();
-            
-        return compact('totalEmployees', 'activeEmployees', 'roleBreakdown');
+
+        return [
+            'totalEmployees' => $totalEmployees,
+            'activeEmployees' => $activeEmployees,
+            'roleBreakdown' => $roleBreakdown,
+        ];
     }
 }
