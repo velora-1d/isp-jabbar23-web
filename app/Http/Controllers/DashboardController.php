@@ -160,7 +160,7 @@ class DashboardController extends Controller
         
         // Ticket stats for CS
         $openTickets = Ticket::where('status', 'open')->count();
-        $myTickets = Ticket::where('technician_id', auth()->id())->whereIn('status', ['open', 'in_progress'])->count();
+        $myTickets = Ticket::where('technician_id', auth()->user()?->id)->whereIn('status', ['open', 'in_progress'])->count();
         
         // Recent customers
         $recentCustomers = Customer::with('package')
