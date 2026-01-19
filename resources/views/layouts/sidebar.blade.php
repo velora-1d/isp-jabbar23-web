@@ -1,5 +1,19 @@
-<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0 border-r border-gray-700/50 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900" aria-label="Sidebar" x-data="{ open: localStorage.getItem('sidebarOpen') || '' }">
-   <div class="h-full px-3 pb-4 overflow-y-auto">
+<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full sm:translate-x-0 border-r border-gray-700/50 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900" aria-label="Sidebar" 
+   x-data="{ open: localStorage.getItem('sidebarOpen') || '' }"
+   x-init="
+      // Restore scroll position on load
+      $nextTick(() => {
+         const savedScroll = localStorage.getItem('sidebarScroll');
+         if (savedScroll) {
+            $refs.sidebarContent.scrollTop = parseInt(savedScroll);
+         }
+      });
+   ">
+   <div x-ref="sidebarContent" 
+        @scroll="localStorage.setItem('sidebarScroll', $el.scrollTop)" 
+        class="h-full px-3 pb-4 overflow-y-auto scrollbar-hide" 
+        style="-ms-overflow-style: none; scrollbar-width: none;">
+      <style>.scrollbar-hide::-webkit-scrollbar { display: none; }</style>
       <ul class="space-y-2 font-medium">
          
          {{-- Dashboard - ALL ROLES --}}
