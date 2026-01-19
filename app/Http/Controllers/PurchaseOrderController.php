@@ -26,10 +26,10 @@ class PurchaseOrderController extends Controller
             ->paginate(15);
 
         $stats = [
-            'total' => PurchaseOrder::query()->count(['*']),
-            'draft' => PurchaseOrder::query()->where('status', '=', 'draft')->count(['*']),
-            'pending' => PurchaseOrder::query()->where('status', '=', 'pending')->count(['*']),
-            'received' => PurchaseOrder::query()->where('status', '=', 'received')->count(['*']),
+            'total' => PurchaseOrder::query()->count('*'),
+            'draft' => PurchaseOrder::query()->where('status', '=', 'draft')->count('*'),
+            'pending' => PurchaseOrder::query()->where('status', '=', 'pending')->count('*'),
+            'received' => PurchaseOrder::query()->where('status', '=', 'received')->count('*'),
             'total_value' => PurchaseOrder::query()->whereIn('status', ['approved', 'ordered', 'partial', 'received'])->sum('total'),
         ];
 
@@ -38,8 +38,15 @@ class PurchaseOrderController extends Controller
 
     public function create(): View
     {
-        $vendors = Vendor::query()->where('status', '=', 'active')->orderBy('name', 'asc')->get(['*']);
-        $inventoryItems = InventoryItem::query()->orderBy('name', 'asc')->get(['*']);
+        $vendors = Vendor::query()
+            ->where('status', '=', 'active')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $inventoryItems = InventoryItem::query()
+            ->orderBy('name', 'asc')
+            ->get();
+
         $poNumber = PurchaseOrder::generatePoNumber();
 
         return view('inventory.purchase-orders.create', compact('vendors', 'inventoryItems', 'poNumber'));
@@ -63,6 +70,7 @@ class PurchaseOrderController extends Controller
             $subtotal += $item['quantity'] * $item['unit_price'];
         }
 
+        /** @var PurchaseOrder $po */
         $po = PurchaseOrder::create([
             'po_number' => PurchaseOrder::generatePoNumber(),
             'vendor_id' => $validated['vendor_id'],
@@ -94,6 +102,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchaseOrder): View
     {
         $purchaseOrder->load(['vendor', 'items', 'creator', 'approver']);
+
         return view('inventory.purchase-orders.show', compact('purchaseOrder'));
     }
 
@@ -103,9 +112,16 @@ class PurchaseOrderController extends Controller
             return back()->with('error', 'PO tidak dapat diedit.');
         }
 
-        $vendors = Vendor::query()->where('status', '=', 'active')->orderBy('name', 'asc')->get(['*']);
-        $inventoryItems = InventoryItem::query()->orderBy('name', 'asc')->get(['*']);
-        $purchaseOrder->load('items');
+        $vendors = Vendor::query()
+            ->where('status', '=', 'active')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $inventoryItems = InventoryItem::query()
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $purchaseOrder->load(['items']);
 
         return view('inventory.purchase-orders.edit', compact('purchaseOrder', 'vendors', 'inventoryItems'));
     }
@@ -167,6 +183,7 @@ class PurchaseOrderController extends Controller
         }
 
         $purchaseOrder->delete();
+
         return redirect()->route('purchase-orders.index')
             ->with('success', 'Purchase Order berhasil dihapus!');
     }
@@ -185,6 +202,7 @@ class PurchaseOrderController extends Controller
     public function cancel(PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $purchaseOrder->update(['status' => 'cancelled']);
+
         return back()->with('success', 'Purchase Order dibatalkan.');
     }
 }

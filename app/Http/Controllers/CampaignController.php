@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class CampaignController extends Controller
 {
@@ -12,28 +15,29 @@ class CampaignController extends Controller
         $this->middleware('role:super-admin|admin|sales');
     }
 
-    public function index()
+    public function index(): View
     {
-        $campaigns = Campaign::with('creator')
+        $campaigns = Campaign::query()
+            ->with(['creator'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
         $stats = [
-            'total' => Campaign::count(),
-            'running' => Campaign::where('status', 'running')->count(),
-            'completed' => Campaign::where('status', 'completed')->count(),
-            'total_sent' => Campaign::sum('sent_count'),
+            'total' => Campaign::query()->count('*'),
+            'running' => Campaign::query()->where('status', '=', 'running')->count('*'),
+            'completed' => Campaign::query()->where('status', '=', 'completed')->count('*'),
+            'total_sent' => Campaign::query()->sum('sent_count'),
         ];
 
         return view('marketing.campaigns.index', compact('campaigns', 'stats'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('marketing.campaigns.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -43,7 +47,7 @@ class CampaignController extends Controller
             'scheduled_at' => 'nullable|date|after:now',
         ]);
 
-        $validated['created_by'] = auth()->id();
+        $validated['created_by'] = Auth::id();
         $validated['status'] = $request->filled('scheduled_at') ? 'scheduled' : 'draft';
 
         Campaign::create($validated);
@@ -52,18 +56,18 @@ class CampaignController extends Controller
             ->with('success', 'Campaign berhasil dibuat!');
     }
 
-    public function show(Campaign $campaign)
+    public function show(Campaign $campaign): View
     {
-        $campaign->load('creator');
+        $campaign->load(['creator']);
         return view('marketing.campaigns.show', compact('campaign'));
     }
 
-    public function edit(Campaign $campaign)
+    public function edit(Campaign $campaign): View
     {
         return view('marketing.campaigns.edit', compact('campaign'));
     }
 
-    public function update(Request $request, Campaign $campaign)
+    public function update(Request $request, Campaign $campaign): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -79,14 +83,15 @@ class CampaignController extends Controller
             ->with('success', 'Campaign berhasil diperbarui!');
     }
 
-    public function destroy(Campaign $campaign)
+    public function destroy(Campaign $campaign): RedirectResponse
     {
         $campaign->delete();
+
         return redirect()->route('campaigns.index')
             ->with('success', 'Campaign berhasil dihapus!');
     }
 
-    public function launch(Campaign $campaign)
+    public function launch(Campaign $campaign): RedirectResponse
     {
         $campaign->update([
             'status' => 'running',
@@ -98,9 +103,10 @@ class CampaignController extends Controller
         return back()->with('success', 'Campaign berhasil diluncurkan!');
     }
 
-    public function cancel(Campaign $campaign)
+    public function cancel(Campaign $campaign): RedirectResponse
     {
         $campaign->update(['status' => 'cancelled']);
+
         return back()->with('success', 'Campaign dibatalkan!');
     }
 }

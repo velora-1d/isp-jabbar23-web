@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class AssetController extends Controller
 {
@@ -13,27 +15,34 @@ class AssetController extends Controller
         $this->middleware('role:super-admin|admin');
     }
 
-    public function index()
+    public function index(): View
     {
-        $assets = Asset::with('vendor')->orderBy('created_at', 'desc')->paginate(15);
-        
+        $assets = Asset::query()
+            ->with(['vendor'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
         $stats = [
-            'total' => Asset::count(['*']),
-            'available' => Asset::where('status', 'available')->count(['*']),
-            'in_use' => Asset::where('status', 'in_use')->count(['*']),
-            'maintenance' => Asset::where('status', 'maintenance')->count(['*']),
+            'total' => Asset::query()->count('*'),
+            'available' => Asset::query()->where('status', '=', 'available')->count('*'),
+            'in_use' => Asset::query()->where('status', '=', 'in_use')->count('*'),
+            'maintenance' => Asset::query()->where('status', '=', 'maintenance')->count('*'),
         ];
 
         return view('assets.index', compact('assets', 'stats'));
     }
 
-    public function create()
+    public function create(): View
     {
-        $vendors = Vendor::where('status', 'active')->orderBy('name')->get();
+        $vendors = Vendor::query()
+            ->where('status', '=', 'active')
+            ->orderBy('name', 'asc')
+            ->get();
+
         return view('assets.create', compact('vendors'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -57,13 +66,17 @@ class AssetController extends Controller
             ->with('success', 'Asset berhasil ditambahkan!');
     }
 
-    public function edit(Asset $asset)
+    public function edit(Asset $asset): View
     {
-        $vendors = Vendor::where('status', 'active')->orderBy('name')->get();
+        $vendors = Vendor::query()
+            ->where('status', '=', 'active')
+            ->orderBy('name', 'asc')
+            ->get();
+
         return view('assets.edit', compact('asset', 'vendors'));
     }
 
-    public function update(Request $request, Asset $asset)
+    public function update(Request $request, Asset $asset): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -87,9 +100,9 @@ class AssetController extends Controller
             ->with('success', 'Asset berhasil diperbarui!');
     }
 
-    public function destroy(Asset $asset)
+    public function destroy(Asset $asset): RedirectResponse
     {
-        Asset::destroy($asset->id);
+        $asset->delete();
 
         return redirect()->route('assets.index')
             ->with('success', 'Asset berhasil dihapus!');
