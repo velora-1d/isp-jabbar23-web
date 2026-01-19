@@ -6,6 +6,9 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Package;
+use App\Models\Odp;
+use App\Models\Olt;
+use App\Models\Partner;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Carbon\Carbon;
@@ -24,41 +27,40 @@ class ReportController extends Controller
     public function index(Request $request): View
     {
         $hasFilter = $request->has('month') || $request->has('year');
-        
-        $currentMonth = date('n');
-        $currentYear = date('Y');
+        $currentMonth = (int) date('n');
+        $currentYear = (int) date('Y');
 
         $query = Invoice::with(['customer.package']);
 
         if ($request->filled('month')) {
-            $query->whereMonth('due_date', $request->month);
+            $query->whereMonth('due_date', '=', $request->month);
         } elseif (!$hasFilter) {
             $request->merge(['month' => $currentMonth]);
-            $query->whereMonth('due_date', $currentMonth);
+            $query->whereMonth('due_date', '=', $currentMonth);
         }
 
         if ($request->filled('year')) {
-            $query->whereYear('due_date', $request->year);
+            $query->whereYear('due_date', '=', $request->year);
         } elseif (!$hasFilter) {
             $request->merge(['year' => $currentYear]);
-            $query->whereYear('due_date', $currentYear);
+            $query->whereYear('due_date', '=', $currentYear);
         }
 
-        $totalRevenue = (clone $query)->where('status', 'paid')->sum('amount');
-        $totalUnpaid = (clone $query)->where('status', 'unpaid')->sum('amount');
-        $countPaid = (clone $query)->where('status', 'paid')->count();
-        $countUnpaid = (clone $query)->where('status', 'unpaid')->count();
+        $totalRevenue = (clone $query)->where('status', '=', 'paid')->sum('amount');
+        $totalUnpaid = (clone $query)->where('status', '=', 'unpaid')->sum('amount');
+        $countPaid = (clone $query)->where('status', '=', 'paid')->count(['*']);
+        $countUnpaid = (clone $query)->where('status', '=', 'unpaid')->count(['*']);
         $countTotal = $countPaid + $countUnpaid;
 
-        $invoices = $query->latest('due_date')->get();
+        $invoices = $query->latest('due_date')->get(['*']);
 
-        $years = Invoice::selectRaw('YEAR(due_date) as year')
+        $years = Invoice::selectRaw('YEAR(due_date) as year', [])
             ->distinct()
             ->orderByDesc('year')
             ->pluck('year');
 
         if ($years->isEmpty()) {
-            $years = collect([date('Y')]);
+            $years = collect([$currentYear]);
         }
 
         return view('reports.index', compact(
@@ -70,43 +72,53 @@ class ReportController extends Controller
     /**
      * Revenue Reports
      */
-    public function revenue(Request $request)
+    public function revenue(Request $request): View
     {
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        // Use paid_at column and confirmed status
-        $totalRevenue = Payment::whereBetween('paid_at', [$startDate, $endDate])
-            ->where('status', 'confirmed')
+        $totalRevenue = Payment::query()
+            ->whereBetween('paid_at', [$startDate, $endDate])
+            ->where('status', '=', 'confirmed')
             ->sum('amount');
 
-        $revenueByMonth = Payment::where('status', 'confirmed')
+        $revenueByMonth = Payment::query()
+            ->where('status', '=', 'confirmed')
             ->where('paid_at', '>=', Carbon::now()->subMonths(12))
-            ->select(
+            ->select([
                 DB::raw('YEAR(paid_at) as year'),
                 DB::raw('MONTH(paid_at) as month'),
-                DB::raw('SUM(amount) as total')
-            )
+                DB::raw('SUM(amount) as total'),
+            ])
             ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get(['*']);
 
-        $revenueByMethod = Payment::where('status', 'confirmed')
+        $revenueByMethod = Payment::query()
+            ->where('status', '=', 'confirmed')
             ->whereBetween('paid_at', [$startDate, $endDate])
-            ->select('payment_method', DB::raw('SUM(amount) as total'), DB::raw('COUNT(*) as count'))
+            ->select([
+                'payment_method',
+                DB::raw('SUM(amount) as total'),
+                DB::raw('COUNT(*) as count'),
+            ])
             ->groupBy('payment_method')
-            ->get();
+            ->get(['*']);
 
-        $pendingInvoices = Invoice::whereIn('status', ['unpaid', 'partial'])
+        $pendingInvoices = Invoice::query()
+            ->whereIn('status', ['unpaid', 'partial'])
             ->sum('total');
 
-        $paidCount = Invoice::where('status', 'paid')
+        $paidCount = Invoice::query()
+            ->where('status', '=', 'paid')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
-        $unpaidCount = Invoice::whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->count(['*']);
+
+        $unpaidCount = Invoice::query()
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->count();
+            ->count(['*']);
 
         return view('reports.revenue', compact(
             'totalRevenue', 'revenueByMonth', 'revenueByMethod',
@@ -118,46 +130,49 @@ class ReportController extends Controller
     /**
      * Customer Reports
      */
-    public function customers(Request $request)
+    public function customers(Request $request): View
     {
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        $totalCustomers = Customer::count();
-        $activeCustomers = Customer::where('status', 'active')->count();
-        $newCustomers = Customer::whereBetween('created_at', [$startDate, $endDate])->count();
-        $churnedCustomers = Customer::where('status', 'inactive')
+        $totalCustomers = Customer::query()->count(['*']);
+        $activeCustomers = Customer::query()->where('status', '=', 'active')->count(['*']);
+        $newCustomers = Customer::query()->whereBetween('created_at', [$startDate, $endDate])->count(['*']);
+        $churnedCustomers = Customer::query()
+            ->where('status', '=', 'inactive')
             ->whereBetween('updated_at', [$startDate, $endDate])
-            ->count();
+            ->count(['*']);
 
-        // Use Customer's package_id directly instead of Subscription model
-        $customersByPackage = Customer::where('status', 'active')
+        $customersByPackage = Customer::query()
+            ->where('status', '=', 'active')
             ->whereNotNull('package_id')
-            ->select('package_id', DB::raw('COUNT(*) as total'))
+            ->select(['package_id', DB::raw('COUNT(*) as total')])
             ->groupBy('package_id')
-            ->with('package:id,name')
-            ->get();
+            ->with(['package:id,name'])
+            ->get(['*']);
 
-        $customerGrowth = Customer::where('created_at', '>=', Carbon::now()->subMonths(12))
-            ->select(
+        $customerGrowth = Customer::query()
+            ->where('created_at', '>=', Carbon::now()->subMonths(12))
+            ->select([
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as total')
-            )
+                DB::raw('COUNT(*) as total'),
+            ])
             ->groupBy('year', 'month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get(['*']);
 
-        // Top customers by payments
-        $topCustomers = Customer::select('customers.*')
-            ->leftJoin('payments', 'customers.id', '=', 'payments.customer_id')
-            ->where('payments.status', 'confirmed')
+        $topCustomers = Customer::query()
+            ->select(['customers.*', DB::raw('COALESCE(SUM(payments.amount), 0) as total_paid')])
+            ->leftJoin('payments', function ($join) {
+                $join->on('customers.id', '=', 'payments.customer_id')
+                     ->where('payments.status', '=', 'confirmed');
+            })
             ->groupBy('customers.id')
-            ->selectRaw('SUM(payments.amount) as total_paid')
             ->orderByDesc('total_paid')
             ->limit(10)
-            ->get();
+            ->get(['*']);
 
         return view('reports.customers', compact(
             'totalCustomers', 'activeCustomers', 'newCustomers', 'churnedCustomers',
@@ -169,27 +184,26 @@ class ReportController extends Controller
     /**
      * Network Reports
      */
-    public function network(Request $request)
+    public function network(Request $request): View
     {
-        // ODP uses total_ports, calculate used by counting customers
         $odpStats = [
-            'total' => \App\Models\Odp::count(),
-            'active' => \App\Models\Odp::where('status', 'active')->count(),
-            'full' => \App\Models\Odp::where('status', 'full')->count(),
-            'maintenance' => \App\Models\Odp::where('status', 'maintenance')->count(),
+            'total' => Odp::query()->count(['*']),
+            'active' => Odp::query()->where('status', '=', 'active')->count(['*']),
+            'full' => Odp::query()->where('status', '=', 'full')->count(['*']),
+            'maintenance' => Odp::query()->where('status', '=', 'maintenance')->count(['*']),
         ];
 
         $oltStats = [
-            'total' => \App\Models\Olt::count(),
-            'online' => \App\Models\Olt::where('status', 'online')->count(),
-            'offline' => \App\Models\Olt::where('status', 'offline')->count(),
+            'total' => Olt::query()->count(['*']),
+            'online' => Olt::query()->where('status', '=', 'online')->count(['*']),
+            'offline' => Olt::query()->where('status', '=', 'offline')->count(['*']),
         ];
 
         $routerStats = [];
 
-        // Calculate bandwidth from packages
         $bandwidthUsage = [
-            'total_allocated' => Customer::where('status', 'active')
+            'total_allocated' => Customer::query()
+                ->where('customers.status', '=', 'active')
                 ->join('packages', 'customers.package_id', '=', 'packages.id')
                 ->sum('packages.bandwidth'),
         ];
@@ -198,47 +212,46 @@ class ReportController extends Controller
     }
 
     /**
-     * Commission Reports - Using Partner model instead of Commission
+     * Commission Reports
      */
-    public function commissions(Request $request)
+    public function commissions(Request $request): View
     {
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
-        // Get partners with their referred customers and calculate commissions
-        $partners = \App\Models\Partner::withCount(['customers as total_customers'])
-            ->get();
+        $partners = Partner::query()->withCount(['customers as total_customers'])->get(['*']);
 
-        // Calculate commission based on referred customers' payments
         $commissionData = [];
         $totalCommissions = 0;
         $paidCommissions = 0;
         $pendingCommissions = 0;
 
         foreach ($partners as $partner) {
-            $customerPayments = Payment::whereHas('customer', function ($q) use ($partner) {
-                    $q->where('partner_id', $partner->id);
+            $customerPayments = Payment::query()
+                ->whereHas('customer', function ($q) use ($partner) {
+                    $q->where('partner_id', '=', $partner->id);
                 })
-                ->where('status', 'confirmed')
+                ->where('status', '=', 'confirmed')
                 ->whereBetween('paid_at', [$startDate, $endDate])
                 ->sum('amount');
-            
-            $commission = $customerPayments * ($partner->commission_rate / 100);
-            
+
+            $commissionRate = $partner->commission_rate ?? 0;
+            $commission = $customerPayments * ($commissionRate / 100);
+
             $commissionData[] = [
                 'partner' => $partner,
                 'amount' => $commission,
                 'customer_payments' => $customerPayments,
             ];
-            
+
             $totalCommissions += $commission;
         }
 
-        // Top performers by customer count
-        $topPerformers = \App\Models\Partner::withCount('customers')
+        $topPerformers = Partner::query()
+            ->withCount(['customers'])
             ->orderByDesc('customers_count')
             ->limit(10)
-            ->get();
+            ->get(['*']);
 
         return view('reports.commissions', compact(
             'commissionData', 'totalCommissions', 'paidCommissions', 'pendingCommissions',
