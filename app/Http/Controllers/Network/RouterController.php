@@ -19,9 +19,9 @@ class RouterController extends Controller
 
         $stats = [
             'total' => Router::count(),
-            'online' => Router::where('status', '=', 'online')->count(['*']),
-            'offline' => Router::where('status', '=', 'offline')->count(['*']),
-            'mikrotik' => Router::where('type', '=', 'mikrotik')->count(['*']),
+            'online' => Router::where('status', '=', 'online')->count(),
+            'offline' => Router::where('status', '=', 'offline')->count(),
+            'mikrotik' => Router::where('type', '=', 'mikrotik')->count(),
         ];
 
         return view('network.routers.index', compact('routers', 'stats'));

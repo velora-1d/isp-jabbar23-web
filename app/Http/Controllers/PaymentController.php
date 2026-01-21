@@ -32,7 +32,7 @@ class PaymentController extends Controller
             'total' => Payment::where('status', '=', 'confirmed', 'and')->sum('amount'),
             'today' => Payment::where('status', '=', 'confirmed', 'and')->whereDate('paid_at', today())->sum('amount'),
             'this_month' => Payment::where('status', '=', 'confirmed', 'and')->whereMonth('paid_at', now()->month)->whereYear('paid_at', now()->year)->sum('amount'),
-            'pending' => Payment::where('status', '=', 'pending', 'and')->count(['*']),
+            'pending' => Payment::where('status', '=', 'pending', 'and')->count(),
         ];
 
         return view('payments.index', compact('payments', 'stats'));
