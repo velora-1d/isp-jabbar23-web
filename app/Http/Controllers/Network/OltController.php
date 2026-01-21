@@ -4,21 +4,55 @@ namespace App\Http\Controllers\Network;
 
 use App\Http\Controllers\Controller;
 use App\Models\Olt;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 
 class OltController extends Controller
 {
+    use HasFilters;
+
     public function index(Request $request)
     {
         $query = Olt::query();
 
-        if ($request->search) {
-            $query->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('ip_address', 'like', "%{$request->search}%");
+        // Apply global filters
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'ip_address', 'brand', 'location']
+        ]);
+
+        // Apply status filter
+        $this->applyStatusFilter($query, $request);
+
+        // Apply type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
         }
 
-        $olts = $query->latest()->paginate(10);
-        return view('network.olts.index', compact('olts'));
+        $olts = $query->latest()->paginate(10)->withQueryString();
+
+        // Stats
+        $stats = [
+            'total' => Olt::count(),
+            'active' => Olt::where('status', 'active')->count(),
+            'offline' => Olt::where('status', 'offline')->count(),
+            'maintenance' => Olt::where('status', 'maintenance')->count(),
+        ];
+
+        // Filter options
+        $statuses = [
+            'active' => 'Active',
+            'offline' => 'Offline',
+            'maintenance' => 'Maintenance',
+        ];
+
+        $types = [
+            'EPON' => 'EPON',
+            'GPON' => 'GPON',
+            'XGPON' => 'XGPON',
+        ];
+
+        return view('network.olts.index', compact('olts', 'stats', 'statuses', 'types'));
     }
 
     public function create()

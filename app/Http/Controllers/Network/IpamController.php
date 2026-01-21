@@ -6,27 +6,50 @@ use App\Http\Controllers\Controller;
 use App\Models\IpPool;
 use App\Models\IpAddress;
 use App\Models\Customer;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 
 class IpamController extends Controller
 {
+    use HasFilters;
+
     public function __construct()
     {
-        $this->middleware('role:super-admin|admin|technician');
+        $this->middleware('role:super-admin|admin|technician|noc');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $pools = IpPool::withCount('addresses')->get();
-        
+        $query = IpPool::withCount('addresses');
+
+        // Apply global filters
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'network', 'description']
+        ]);
+
+        // Apply type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $pools = $query->latest()->paginate(15)->withQueryString();
+
         $stats = [
-            'total_pools' => $pools->count(),
+            'total_pools' => IpPool::count(),
             'total_ips' => IpAddress::count(),
-            'allocated' => IpAddress::where('status', '=', 'allocated')->count(['*']),
-            'available' => IpAddress::where('status', '=', 'available')->count(['*']),
+            'allocated' => IpAddress::where('status', 'allocated')->count(),
+            'available' => IpAddress::where('status', 'available')->count(),
         ];
 
-        return view('network.ipam.index', compact('pools', 'stats'));
+        // Filter options
+        $types = [
+            'public' => 'Public',
+            'private' => 'Private',
+            'cgnat' => 'CGNAT',
+        ];
+
+        return view('network.ipam.index', compact('pools', 'stats', 'types'));
     }
 
     public function createPool()
