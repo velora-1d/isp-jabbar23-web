@@ -10,12 +10,15 @@ use App\Models\InventoryItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\Odp;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class WorkOrderController extends Controller
 {
+    use HasFilters;
+
     public function __construct()
     {
         // Permission middleware
@@ -29,25 +32,73 @@ class WorkOrderController extends Controller
     {
         $query = WorkOrder::with(['customer', 'technician']);
 
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status', '=', $request->status, 'and');
+        // Apply global filters (year, month, search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['ticket_number', 'description', 'customer.name']
+        ]);
+
+        // Apply status filter
+        $this->applyStatusFilter($query, $request);
+
+        // Apply technician filter
+        $this->applyRelationFilter($query, $request, 'technician_id');
+
+        // Apply type filter
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
         }
 
-        if ($request->has('technician_id') && $request->technician_id != '') {
-            $query->where('technician_id', '=', $request->technician_id, 'and');
+        // Apply priority filter
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
         }
 
-        $workOrders = $query->latest()->paginate(10);
-        
-        $technicians = User::technicians()->get(); 
+        $workOrders = $query->latest()->paginate(10)->withQueryString();
+
+        $technicians = User::technicians()->get();
+
+        // Stats respecting filters
+        $statsQuery = WorkOrder::query();
+        if ($request->filled('year')) {
+            $statsQuery->whereYear('created_at', $request->year);
+        }
+        if ($request->filled('month')) {
+            $statsQuery->whereMonth('created_at', $request->month);
+        }
 
         $stats = [
-            'pending' => WorkOrder::where('status', '=', 'pending', 'and')->count(['*']),
-            'in_progress' => WorkOrder::where('status', '=', 'in_progress', 'and')->count(['*']),
-            'completed' => WorkOrder::where('status', '=', 'completed', 'and')->whereDate('completed_date', '=', today())->count(['*']),
+            'pending' => (clone $statsQuery)->where('status', 'pending')->count(),
+            'in_progress' => (clone $statsQuery)->where('status', 'in_progress')->count(),
+            'completed' => (clone $statsQuery)->where('status', 'completed')->whereDate('completed_date', today())->count(),
         ];
 
-        return view('work-orders.index', compact('workOrders', 'technicians', 'stats'));
+        // Filter options
+        $types = [
+            'installation' => 'Installation',
+            'repair' => 'Repair',
+            'dismantling' => 'Dismantling',
+            'survey' => 'Survey',
+            'maintenance' => 'Maintenance',
+        ];
+
+        $priorities = [
+            'low' => 'Low',
+            'medium' => 'Medium',
+            'high' => 'High',
+            'critical' => 'Critical',
+        ];
+
+        $statuses = [
+            'pending' => 'Pending',
+            'scheduled' => 'Scheduled',
+            'on_way' => 'On Way',
+            'in_progress' => 'In Progress',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+        ];
+
+        return view('work-orders.index', compact('workOrders', 'technicians', 'stats', 'types', 'priorities', 'statuses'));
     }
 
     public function create()
@@ -93,13 +144,13 @@ class WorkOrderController extends Controller
 
         if ($validated['status'] === 'completed' && $workOrder->status !== 'completed') {
             $validated['completed_date'] = now();
-            
+
             // Deduct stock for items used
             DB::transaction(function () use ($workOrder) {
-                // Assuming deduction from Main Warehouse (Location ID 1) for simplicity now, 
+                // Assuming deduction from Main Warehouse (Location ID 1) for simplicity now,
                 // in standard SOP strictly should be from Technician's Car (Location ID 2/3)
                 // Let's use Location ID 1 (Gudang Utama) as default source for now.
-                $sourceLocationId = 1; 
+                $sourceLocationId = 1;
 
                 foreach ($workOrder->items as $woItem) {
                     $stock = Stock::firstOrCreate(
@@ -145,7 +196,7 @@ class WorkOrderController extends Controller
         ]);
 
         $item = InventoryItem::find($validated['inventory_item_id'], ['*']);
-        
+
         WorkOrderItem::create([
             'work_order_id' => $workOrder->id,
             'inventory_item_id' => $item->id,
@@ -156,7 +207,7 @@ class WorkOrderController extends Controller
 
         return back()->with('success', 'Material ditambahkan ke WO!');
     }
-    
+
     public function removeItem(WorkOrderItem $item)
     {
         WorkOrderItem::destroy($item->id);
