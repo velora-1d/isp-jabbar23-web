@@ -22,11 +22,8 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\RecurringBillingController;
 
 Route::get('/', function () {
-    // Show landing page for guests, redirect to dashboard for authenticated users
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
-    return view('welcome');
+    // Landing page untuk nanti - sekarang fokus dashboard internal
+    return redirect()->route('login');
 });
 
 // ============================================
