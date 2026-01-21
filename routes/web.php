@@ -211,7 +211,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Customer Messages
-    Route::middleware(['role:super-admin|admin|sales'])->group(function () {
+    Route::middleware(['role:super-admin|admin|sales-cs'])->group(function () {
         Route::resource('messages', \App\Http\Controllers\MessageController::class)->except(['edit', 'update', 'destroy']);
         Route::get('messages/conversation/{customer}', [\App\Http\Controllers\MessageController::class, 'show'])->name('messages.conversation');
         Route::post('messages/quick', [\App\Http\Controllers\MessageController::class, 'sendQuick'])->name('messages.quick');
@@ -223,13 +223,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Promotions
-    Route::middleware(['role:super-admin|admin|sales|finance'])->group(function () {
+    Route::middleware(['role:super-admin|admin|sales-cs|finance'])->group(function () {
         Route::patch('promotions/{promotion}/toggle-active', [\App\Http\Controllers\PromotionController::class, 'toggleActive'])->name('promotions.toggle-active');
         Route::resource('promotions', \App\Http\Controllers\PromotionController::class);
     });
 
     // Knowledge Base
-    Route::middleware(['role:super-admin|admin|sales|noc|technician'])->group(function () {
+    Route::middleware(['role:super-admin|admin|sales-cs|noc|technician'])->group(function () {
         Route::resource('knowledge-base', \App\Http\Controllers\KnowledgeBaseController::class);
     });
 
@@ -239,14 +239,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Campaigns
-    Route::middleware(['role:super-admin|admin|sales'])->group(function () {
+    Route::middleware(['role:super-admin|admin|sales-cs'])->group(function () {
         Route::post('campaigns/{campaign}/launch', [\App\Http\Controllers\CampaignController::class, 'launch'])->name('campaigns.launch');
         Route::post('campaigns/{campaign}/cancel', [\App\Http\Controllers\CampaignController::class, 'cancel'])->name('campaigns.cancel');
         Route::resource('campaigns', \App\Http\Controllers\CampaignController::class);
     });
 
     // Referrals
-    Route::middleware(['role:super-admin|admin|sales'])->group(function () {
+    Route::middleware(['role:super-admin|admin|sales-cs'])->group(function () {
         Route::post('referrals/{referral}/qualify', [\App\Http\Controllers\ReferralController::class, 'markQualified'])->name('referrals.qualify');
         Route::post('referrals/{referral}/pay', [\App\Http\Controllers\ReferralController::class, 'payReward'])->name('referrals.pay');
         Route::resource('referrals', \App\Http\Controllers\ReferralController::class)->except(['edit', 'update', 'show']);
