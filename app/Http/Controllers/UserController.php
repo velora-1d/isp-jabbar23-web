@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use App\Models\User;
 
 class UserController extends Controller
 {
+    use HasFilters;
+
     public function __construct()
     {
         $this->middleware('permission:view users')->only(['index']);
@@ -18,17 +21,44 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Ambil semua karyawan internal (termasuk teknisi/noc)
         // Kita whitelist role yang dianggap sebagai pegawai internal
-        $internalRoles = ['super-admin', 'admin', 'sales', 'finance', 'noc', 'warehouse', 'hrd'];
+        $internalRoles = ['super-admin', 'admin', 'sales-cs', 'finance', 'noc', 'warehouse', 'hrd', 'technician'];
 
-        $users = User::with('roles')->whereHas('roles', function ($q) use ($internalRoles) {
+        $query = User::with('roles')->whereHas('roles', function ($q) use ($internalRoles) {
             $q->whereIn('name', $internalRoles);
-        })->orderBy('name')->get();
+        });
 
-        return view('users.index', compact('users'));
+        // Apply global filters (search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'email']
+        ]);
+
+        // Apply role filter
+        if ($request->filled('role')) {
+            $query->whereHas('roles', fn($q) => $q->where('name', $request->role));
+        }
+
+        // Apply status filter
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $users = $query->orderBy('name')->paginate(15)->withQueryString();
+
+        // Stats
+        $stats = [
+            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', $internalRoles))->count(),
+            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', $internalRoles))->where('is_active', true)->count(),
+        ];
+
+        // Filter options
+        $roles = \Spatie\Permission\Models\Role::whereIn('name', $internalRoles)->pluck('name', 'name')->toArray();
+
+        return view('users.index', compact('users', 'stats', 'roles'));
     }
 
     /**

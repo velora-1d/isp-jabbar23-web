@@ -6,53 +6,72 @@ use App\Models\Lead;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\Customer;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 
 class LeadController extends Controller
 {
+    use HasFilters;
+
     public function index(Request $request)
     {
         $query = Lead::with(['interestedPackage', 'assignedTo']);
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        // Apply global filters (year, month, search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'phone', 'email', 'lead_number']
+        ]);
 
-        // Filter by source
+        // Apply specific filters
+        $this->applyStatusFilter($query, $request);
+        $this->applyRelationFilter($query, $request, 'assigned_to');
+
         if ($request->filled('source')) {
             $query->where('source', $request->source);
         }
 
-        // Filter by assigned user
-        if ($request->filled('assigned_to')) {
-            $query->where('assigned_to', $request->assigned_to);
+        // Stats respecting filters
+        $statsQuery = Lead::query();
+        if ($request->filled('year')) {
+            $statsQuery->whereYear('created_at', $request->year);
+        }
+        if ($request->filled('month')) {
+            $statsQuery->whereMonth('created_at', $request->month);
         }
 
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('lead_number', 'like', "%{$search}%");
-            });
-        }
-
-        // Stats
         $stats = [
-            'total' => Lead::count(),
-            'new' => Lead::where('status', 'new')->count(),
-            'in_progress' => Lead::whereIn('status', ['contacted', 'qualified', 'proposal', 'negotiation'])->count(),
-            'won' => Lead::where('status', 'won')->count(),
-            'lost' => Lead::where('status', 'lost')->count(),
+            'total' => (clone $statsQuery)->count(),
+            'new' => (clone $statsQuery)->where('status', 'new')->count(),
+            'in_progress' => (clone $statsQuery)->whereIn('status', ['contacted', 'qualified', 'proposal', 'negotiation'])->count(),
+            'won' => (clone $statsQuery)->where('status', 'won')->count(),
+            'lost' => (clone $statsQuery)->where('status', 'lost')->count(),
         ];
 
-        $leads = $query->latest()->paginate(15);
+        $leads = $query->latest()->paginate(15)->withQueryString();
         $salesUsers = User::whereHas('roles', fn($q) => $q->whereIn('name', ['Super Admin', 'Sales & CS']))->get();
 
-        return view('leads.index', compact('leads', 'stats', 'salesUsers'));
+        // Filter options
+        $statuses = [
+            'new' => 'New',
+            'contacted' => 'Contacted',
+            'qualified' => 'Qualified',
+            'proposal' => 'Proposal',
+            'negotiation' => 'Negotiation',
+            'won' => 'Won',
+            'lost' => 'Lost',
+        ];
+
+        $sources = [
+            'website' => 'Website',
+            'whatsapp' => 'WhatsApp',
+            'referral' => 'Referral',
+            'walk-in' => 'Walk-in',
+            'social_media' => 'Social Media',
+            'other' => 'Other',
+        ];
+
+        return view('leads.index', compact('leads', 'stats', 'salesUsers', 'statuses', 'sources'));
     }
 
     public function create()

@@ -5,45 +5,58 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Models\User;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
 {
+    use HasFilters;
+
     /**
      * Display a listing of customers.
      */
     public function index(Request $request): View
     {
-        $query = Customer::with(['package', 'technician'])->latest();
+        $query = Customer::with(['package', 'technician']);
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('kelurahan') && $request->kelurahan !== 'all') {
+        // Apply global filters (year, month, search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'cid', 'phone', 'email', 'address']
+        ]);
+
+        // Apply specific filters
+        $this->applyStatusFilter($query, $request);
+        $this->applyRelationFilter($query, $request, 'package_id');
+
+        if ($request->filled('kelurahan')) {
             $query->where('kelurahan', $request->kelurahan);
         }
-        if ($request->filled('kecamatan') && $request->kecamatan !== 'all') {
+        if ($request->filled('kecamatan')) {
             $query->where('kecamatan', $request->kecamatan);
         }
-        if ($request->filled('kabupaten') && $request->kabupaten !== 'all') {
+        if ($request->filled('kabupaten')) {
             $query->where('kabupaten', $request->kabupaten);
         }
-        if ($request->filled('provinsi') && $request->provinsi !== 'all') {
-            $query->where('provinsi', $request->provinsi);
-        }
-        if ($request->filled('package_id') && $request->package_id !== 'all') {
-            $query->where('package_id', $request->package_id);
-        }
 
-        $customers = $query->paginate(10)->withQueryString();
+        $customers = $query->latest()->paginate(10)->withQueryString();
+
+        // Stats respecting filters
+        $statsQuery = Customer::query();
+        if ($request->filled('year')) {
+            $statsQuery->whereYear('created_at', $request->year);
+        }
+        if ($request->filled('month')) {
+            $statsQuery->whereMonth('created_at', $request->month);
+        }
 
         $stats = [
-            'total' => Customer::count(),
-            'active' => Customer::where('status', 'active')->count(),
-            'pending' => Customer::whereIn('status', ['registered', 'survey', 'approved', 'scheduled', 'installing'])->count(),
-            'suspended' => Customer::where('status', 'suspended')->count(),
+            'total' => (clone $statsQuery)->count(),
+            'active' => (clone $statsQuery)->where('status', 'active')->count(),
+            'pending' => (clone $statsQuery)->whereIn('status', ['registered', 'survey', 'approved', 'scheduled', 'installing'])->count(),
+            'suspended' => (clone $statsQuery)->where('status', 'suspended')->count(),
         ];
 
         $statuses = Customer::STATUSES;

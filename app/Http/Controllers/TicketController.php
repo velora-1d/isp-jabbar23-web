@@ -5,49 +5,72 @@ namespace App\Http\Controllers;
 use App\Models\Ticket;
 use App\Models\Customer;
 use App\Models\User;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
+    use HasFilters;
+
     /**
      * Display a listing of tickets.
      */
     public function index(Request $request)
     {
-        $query = Ticket::with(['customer', 'technician'])->latest();
+        $query = Ticket::with(['customer', 'technician']);
 
-        // Filters
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('priority') && $request->priority !== 'all') {
+        // Apply global filters (year, month, search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['ticket_number', 'subject', 'customer.name']
+        ]);
+
+        // Apply specific filters
+        $this->applyStatusFilter($query, $request);
+        $this->applyRelationFilter($query, $request, 'technician_id');
+
+        if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
         }
-        if ($request->filled('technician_id') && $request->technician_id !== 'all') {
-            $query->where('technician_id', $request->technician_id);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('ticket_number', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($dq) use ($search) {
-                      $dq->where('name', 'like', "%{$search}%");
-                  });
-            });
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
         }
 
-        $tickets = $query->paginate(10)->withQueryString();
+        $tickets = $query->latest()->paginate(10)->withQueryString();
         $technicians = User::role('noc')->orderBy('name')->get();
-        
-        // Stats
+
+        // Stats respecting filters
+        $statsQuery = Ticket::query();
+        if ($request->filled('year')) {
+            $statsQuery->whereYear('created_at', $request->year);
+        }
+        if ($request->filled('month')) {
+            $statsQuery->whereMonth('created_at', $request->month);
+        }
+
         $stats = [
-            'open' => Ticket::where('status', 'open')->count(),
-            'in_progress' => Ticket::where('status', 'in_progress')->count(),
-            'resolved' => Ticket::where('status', 'resolved')->count(),
+            'open' => (clone $statsQuery)->where('status', 'open')->count(),
+            'in_progress' => (clone $statsQuery)->where('status', 'in_progress')->count(),
+            'resolved' => (clone $statsQuery)->where('status', 'resolved')->count(),
         ];
 
-        return view('tickets.index', compact('tickets', 'technicians', 'stats'));
+        // Filter options
+        $statuses = [
+            'open' => 'Open',
+            'in_progress' => 'In Progress',
+            'resolved' => 'Resolved',
+            'closed' => 'Closed',
+        ];
+
+        $priorities = [
+            'low' => 'Low',
+            'medium' => 'Medium',
+            'high' => 'High',
+            'critical' => 'Critical',
+        ];
+
+        return view('tickets.index', compact('tickets', 'technicians', 'stats', 'statuses', 'priorities'));
     }
 
     /**

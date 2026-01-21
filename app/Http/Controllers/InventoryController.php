@@ -7,12 +7,15 @@ use App\Models\InventoryCategory;
 use App\Models\Location;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Traits\HasFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class InventoryController extends Controller
 {
+    use HasFilters;
+
     public function __construct()
     {
         $this->middleware('permission:view inventory')->only(['index']);
@@ -24,33 +27,47 @@ class InventoryController extends Controller
     {
         $query = InventoryItem::with(['category', 'stocks']);
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%", 'and')
-                  ->orWhere('sku', 'like', "%{$search}%", 'and');
+        // Apply global filters (year, month, search)
+        $this->applyGlobalFilters($query, $request, [
+            'dateColumn' => 'created_at',
+            'searchColumns' => ['name', 'sku']
+        ]);
+
+        // Apply category filter
+        $this->applyRelationFilter($query, $request, 'category_id');
+
+        // Apply stock status filter
+        if ($request->filled('stock_status')) {
+            if ($request->stock_status === 'low') {
+                $query->whereRaw('(SELECT COALESCE(SUM(quantity), 0) FROM stocks WHERE stocks.inventory_item_id = inventory_items.id) <= min_stock_alert');
+            } elseif ($request->stock_status === 'out') {
+                $query->whereRaw('(SELECT COALESCE(SUM(quantity), 0) FROM stocks WHERE stocks.inventory_item_id = inventory_items.id) = 0');
+            }
         }
 
-        if ($request->has('category_id') && $request->category_id != '') {
-            $query->where('category_id', '=', $request->category_id, 'and');
-        }
-
-        $items = $query->paginate(15, ['*']);
-        $categories = InventoryCategory::all(['*']);
-        $locations = Location::where('is_active', '=', true, 'and')->get(['*']);
+        $items = $query->latest()->paginate(15)->withQueryString();
+        $categories = InventoryCategory::all();
+        $locations = Location::where('is_active', true)->get();
 
         // Calculate low stock items
-        $lowStockCount = InventoryItem::get(['*'])->filter(function ($item) {
+        $lowStockCount = InventoryItem::get()->filter(function ($item) {
             return $item->total_stock <= $item->min_stock_alert;
         })->count();
 
         $stats = [
-            'total_items' => InventoryItem::count(['*']),
-            'total_value' => InventoryItem::get(['*'])->sum(fn($item) => $item->total_stock * $item->purchase_price),
+            'total_items' => InventoryItem::count(),
+            'total_value' => InventoryItem::get()->sum(fn($item) => $item->total_stock * $item->purchase_price),
             'low_stock' => $lowStockCount,
             'categories' => $categories->count(),
         ];
 
-        return view('inventory.index', compact('items', 'categories', 'locations', 'stats'));
+        // Filter options
+        $stockStatuses = [
+            'low' => 'Low Stock',
+            'out' => 'Out of Stock',
+        ];
+
+        return view('inventory.index', compact('items', 'categories', 'locations', 'stats', 'stockStatuses'));
     }
 
     public function store(Request $request)
@@ -91,7 +108,7 @@ class InventoryController extends Controller
             );
 
             $previousQty = $stock->quantity;
-            
+
             if ($validated['type'] === 'in') {
                 $stock->quantity += $validated['quantity'];
             } else {
@@ -143,7 +160,7 @@ class InventoryController extends Controller
     {
         // Check if has stock or movements
         if ($inventoryItem->total_stock > 0) {
-             return back()->withErrors(['error' => 'Gagal hapus! Item masih memiliki stok. Gunakan Stock Adjustment untuk mengosongkan.']);
+            return back()->withErrors(['error' => 'Gagal hapus! Item masih memiliki stok. Gunakan Stock Adjustment untuk mengosongkan.']);
         }
 
         // We can just soft delete or delete. For now delete.
