@@ -32,7 +32,7 @@
                 <div class="mb-6 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
                     <form method="GET" action="{{ route('dashboard') }}" id="dashboardFilterForm">
                         <!-- Row 1: Quick Presets -->
-                        <div class="flex items-center gap-2 mb-3 flex-wrap">
+                        <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
                             <span class="text-sm text-gray-400 font-medium mr-2">
                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -59,7 +59,7 @@
                         </div>
 
                         <!-- Row 2: Detailed Filters -->
-                        <div class="flex items-center gap-3 flex-wrap">
+                        <div class="flex items-center justify-between gap-3 flex-wrap">
                             <span class="text-sm text-gray-400 font-medium">
                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -76,7 +76,8 @@
                                 <option value="">Bulan</option>
                                 @foreach(['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'] as $index => $bulan)
                                     <option value="{{ $index + 1 }}" {{ request('month') == ($index + 1) ? 'selected' : '' }}>
-                                        {{ $bulan }}</option>
+                                        {{ $bulan }}
+                                    </option>
                                 @endforeach
                             </select>
 
@@ -744,7 +745,7 @@
                                 });
                             }
                         @endif
-                                            });
+                                                    });
             </script>
         @endpush
     @endif
