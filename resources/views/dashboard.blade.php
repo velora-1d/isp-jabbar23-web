@@ -29,37 +29,45 @@
             @if($userRole === 'super-admin' || $userRole === 'admin')
 
                 <!-- Dashboard Filter -->
-                <div class="mb-8">
-                    <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap items-end gap-4">
+                <div class="mb-6 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
+                    <form method="GET" action="{{ route('dashboard') }}" class="flex items-center gap-3 flex-wrap">
+                        <span class="text-sm text-gray-400 font-medium">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            Filter:
+                        </span>
+
                         <!-- Month Filter -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Bulan</label>
-                            <select name="month"
-                                class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                                onchange="this.form.submit()">
-                                <option value="">Semua Bulan</option>
-                                @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $index => $bulan)
-                                    <option value="{{ $index + 1 }}" {{ request('month') == ($index + 1) ? 'selected' : '' }}>{{ $bulan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <select name="month"
+                            class="bg-gray-900/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer hover:border-gray-500"
+                            onchange="this.form.submit()">
+                            <option value="">Semua Bulan</option>
+                            @foreach(['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'] as $index => $bulan)
+                                <option value="{{ $index + 1 }}" {{ request('month') == ($index + 1) ? 'selected' : '' }}>
+                                    {{ $bulan }}</option>
+                            @endforeach
+                        </select>
 
                         <!-- Year Filter -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Tahun</label>
-                            <select name="year"
-                                class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                                onchange="this.form.submit()">
-                                @foreach($years ?? [date('Y')] as $year)
-                                    <option value="{{ $year }}" {{ request('year', date('Y')) == $year ? 'selected' : '' }}>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <select name="year"
+                            class="bg-gray-900/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all cursor-pointer hover:border-gray-500"
+                            onchange="this.form.submit()">
+                            @for($y = date('Y'); $y >= 2020; $y--)
+                                <option value="{{ $y }}" {{ request('year', date('Y')) == $y ? 'selected' : '' }}>{{ $y }}
+                                </option>
+                            @endfor
+                        </select>
 
                         <!-- Reset Button -->
-                        @if(request('month') || request('year'))
+                        @if(request('month') || (request('year') && request('year') != date('Y')))
                             <a href="{{ route('dashboard') }}"
-                                class="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl transition-colors">
+                                class="px-3 py-2 text-sm bg-gray-700/50 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                                 Reset
                             </a>
                         @endif
@@ -666,7 +674,7 @@
                                 });
                             }
                         @endif
-                            });
+                                    });
             </script>
         @endpush
     @endif

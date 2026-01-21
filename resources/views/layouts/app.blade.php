@@ -19,6 +19,22 @@
 
   <!-- Header Animation Styles -->
   <style>
+    /* Hide Scrollbar but Keep Scroll Functionality */
+    html,
+    body {
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* IE/Edge */
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    *::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari, Opera */
+    }
+
     /* Floating Orb Animation */
     @keyframes float-slow {
 
