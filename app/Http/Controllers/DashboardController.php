@@ -56,7 +56,7 @@ class DashboardController extends Controller
     private function getRoleSpecificData(User $user, Request $request): array
     {
         if ($user->hasAnyRole(['super-admin', 'admin'])) {
-            return $this->getAdminDashboardData();
+            return $this->getAdminDashboardData($request);
         }
 
         if ($user->hasRole('sales-cs')) {
@@ -175,10 +175,13 @@ class DashboardController extends Controller
      *
      * @return array<string, mixed>
      */
-    private function getAdminDashboardData(): array
+    private function getAdminDashboardData(Request $request): array
     {
-        $currentMonth = (int) date('m');
-        $currentYear = (int) date('Y');
+        // Use filter parameters or default to current month/year
+        $filterMonth = $request->input('month');
+        $filterYear = $request->input('year', date('Y'));
+        $currentMonth = $filterMonth ? (int) $filterMonth : (int) date('m');
+        $currentYear = (int) $filterYear;
 
         // Revenue stats
         $totalRevenue = Payment::where('status', '=', 'confirmed')->sum('amount');

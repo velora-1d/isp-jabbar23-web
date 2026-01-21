@@ -28,6 +28,44 @@
             {{-- ============================================== --}}
             @if($userRole === 'super-admin' || $userRole === 'admin')
 
+                <!-- Dashboard Filter -->
+                <div class="mb-8">
+                    <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap items-end gap-4">
+                        <!-- Month Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Bulan</label>
+                            <select name="month"
+                                class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                                onchange="this.form.submit()">
+                                <option value="">Semua Bulan</option>
+                                @foreach(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $index => $bulan)
+                                    <option value="{{ $index + 1 }}" {{ request('month') == ($index + 1) ? 'selected' : '' }}>{{ $bulan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Year Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Tahun</label>
+                            <select name="year"
+                                class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                                onchange="this.form.submit()">
+                                @foreach($years ?? [date('Y')] as $year)
+                                    <option value="{{ $year }}" {{ request('year', date('Y')) == $year ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Reset Button -->
+                        @if(request('month') || request('year'))
+                            <a href="{{ route('dashboard') }}"
+                                class="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl transition-colors">
+                                Reset
+                            </a>
+                        @endif
+                    </form>
+                </div>
+
                 <!-- Admin Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Revenue This Month -->
