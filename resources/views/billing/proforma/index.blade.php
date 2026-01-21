@@ -6,7 +6,7 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Proforma...'" />
+                <x-filter-global :search-placeholder="'Cari Proforma...'" />
             </x-slot>
 
             <x-slot name="filters">
@@ -51,7 +51,8 @@
                     <div>
                         <p class="text-sm text-gray-400">Nilai Pending</p>
                         <p class="text-2xl font-bold text-white">Rp
-                            {{ number_format($stats['pending_value'], 0, ',', '.') }}</p>
+                            {{ number_format($stats['pending_value'], 0, ',', '.') }}
+                        </p>
                     </div>
                 </div>
             </div>

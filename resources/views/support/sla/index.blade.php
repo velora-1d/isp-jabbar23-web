@@ -5,11 +5,11 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search SLA...'" :show-date-range="false" />
+                <x-filter-global :search-placeholder="'Cari SLA...'" :show-date-range="false" />
             </x-slot>
 
             <x-slot name="filters">
-                <x-filter-select name="priority" label="Priority" :options="$priorities" :selected="request('priority')" />
+                <x-filter-select name="priority" label="Prioritas" :options="$priorities" :selected="request('priority')" />
             </x-slot>
 
             <x-slot name="actions">
@@ -43,7 +43,7 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Total Policies</p>
+                    <p class="text-sm text-gray-400">Total Kebijakan</p>
                     <p class="text-2xl font-bold text-white">{{ $stats['total'] }}</p>
                 </div>
             </div>

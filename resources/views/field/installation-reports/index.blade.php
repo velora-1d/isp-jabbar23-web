@@ -6,12 +6,12 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Reports...'" />
+                <x-filter-global :search-placeholder="'Cari Laporan...'" />
             </x-slot>
 
             <x-slot name="filters">
                 <x-filter-select name="status" label="Status" :options="$statuses" :selected="request('status')" />
-                <x-filter-select name="technician_id" label="Technician" :options="$technicians->pluck('name', 'id')"
+                <x-filter-select name="technician_id" label="Teknisi" :options="$technicians->pluck('name', 'id')"
                     :selected="request('technician_id')" />
             </x-slot>
 

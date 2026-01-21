@@ -6,12 +6,12 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Leave...'" />
+                <x-filter-global :search-placeholder="'Cari Cuti...'" />
             </x-slot>
 
             <x-slot name="filters">
                 <x-filter-select name="status" label="Status" :options="$statuses" :selected="request('status')" />
-                <x-filter-select name="type" label="Type" :options="$types" :selected="request('type')" />
+                <x-filter-select name="type" label="Tipe" :options="$types" :selected="request('type')" />
             </x-slot>
 
             <x-slot name="actions">

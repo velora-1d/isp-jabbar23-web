@@ -7,13 +7,13 @@
                 <div class="p-6 text-gray-100">
                     <x-filter-bar :filters="$filters ?? []">
                         <x-slot name="global">
-                            <x-filter-global :search-placeholder="'Search OLT...'" />
+                            <x-filter-global :search-placeholder="'Cari OLT...'" />
                         </x-slot>
 
                         <x-slot name="filters">
                             <x-filter-select name="status" label="Status" :options="$statuses"
                                 :selected="request('status')" />
-                            <x-filter-select name="type" label="Type" :options="$types" :selected="request('type')" />
+                            <x-filter-select name="type" label="Tipe" :options="$types" :selected="request('type')" />
                         </x-slot>
 
                         <x-slot name="actions">
@@ -23,7 +23,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
-                                Add New OLT
+                                Tambah OLT Baru
                             </a>
                         </x-slot>
                     </x-filter-bar>
@@ -32,13 +32,13 @@
                         <table class="w-full text-sm text-left text-gray-400">
                             <thead class="text-xs text-gray-400 uppercase bg-gray-700/50">
                                 <tr>
-                                    <th class="px-6 py-3">Name</th>
-                                    <th class="px-6 py-3">IP Address</th>
-                                    <th class="px-6 py-3">Type / Brand</th>
-                                    <th class="px-6 py-3">PON Ports</th>
-                                    <th class="px-6 py-3">Location</th>
+                                    <th class="px-6 py-3">Nama</th>
+                                    <th class="px-6 py-3">Alamat IP</th>
+                                    <th class="px-6 py-3">Tipe / Merek</th>
+                                    <th class="px-6 py-3">Port PON</th>
+                                    <th class="px-6 py-3">Lokasi</th>
                                     <th class="px-6 py-3">Status</th>
-                                    <th class="px-6 py-3">Action</th>
+                                    <th class="px-6 py-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

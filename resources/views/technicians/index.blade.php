@@ -3,7 +3,7 @@
         <x-slot name="header">
             <x-filter-bar :filters="$filters ?? []">
                 <x-slot name="global">
-                    <x-filter-global :search-placeholder="'Search Technician...'" />
+                    <x-filter-global :search-placeholder="'Cari Teknisi...'" />
                 </x-slot>
 
                 <x-slot name="filters">

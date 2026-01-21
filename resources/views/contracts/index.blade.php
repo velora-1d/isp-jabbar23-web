@@ -6,7 +6,7 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Contract...'" />
+                <x-filter-global :search-placeholder="'Cari Kontrak...'" />
             </x-slot>
 
             <x-slot name="filters">

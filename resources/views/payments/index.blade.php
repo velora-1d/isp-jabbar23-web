@@ -6,9 +6,9 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Payments
+                    Pembayaran
                 </h1>
-                <p class="text-gray-400 mt-1">Kelola pembayaran dari customer</p>
+                <p class="text-gray-400 mt-1">Kelola pembayaran dari pelanggan</p>
             </div>
             <a href="{{ route('payments.create') }}"
                 class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/25">

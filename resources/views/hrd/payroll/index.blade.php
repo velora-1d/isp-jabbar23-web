@@ -6,7 +6,7 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Payroll...'" />
+                <x-filter-global :search-placeholder="'Cari Payroll...'" />
             </x-slot>
 
             <x-slot name="filters">
@@ -90,7 +90,8 @@
                     <div>
                         <p class="text-sm text-gray-400">Total Pengeluaran</p>
                         <p class="text-xl font-bold text-yellow-400">Rp
-                            {{ number_format($stats['total_amount'], 0, ',', '.') }}</p>
+                            {{ number_format($stats['total_amount'], 0, ',', '.') }}
+                        </p>
                     </div>
                 </div>
             </div>

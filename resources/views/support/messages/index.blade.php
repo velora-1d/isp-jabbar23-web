@@ -6,13 +6,12 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Messages...'" />
+                <x-filter-global :search-placeholder="'Cari Pesan...'" />
             </x-slot>
 
             <x-slot name="filters">
-                <x-filter-select name="channel" label="Channel" :options="$channels" :selected="request('channel')" />
-                <x-filter-select name="direction" label="Direction" :options="$directions"
-                    :selected="request('direction')" />
+                <x-filter-select name="channel" label="Kanal" :options="$channels" :selected="request('channel')" />
+                <x-filter-select name="direction" label="Arah" :options="$directions" :selected="request('direction')" />
             </x-slot>
 
             <x-slot name="actions">

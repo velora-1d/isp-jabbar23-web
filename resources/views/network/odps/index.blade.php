@@ -7,7 +7,7 @@
                 <div class="p-6 text-gray-100">
                     <x-filter-bar :filters="$filters ?? []">
                         <x-slot name="global">
-                            <x-filter-global :search-placeholder="'Search ODP...'" />
+                            <x-filter-global :search-placeholder="'Cari ODP...'" />
                         </x-slot>
 
                         <x-slot name="filters">
@@ -22,7 +22,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
-                                Add New ODP
+                                Tambah ODP Baru
                             </a>
                         </x-slot>
                     </x-filter-bar>
@@ -34,11 +34,11 @@
                         <table class="w-full text-sm text-left text-gray-400">
                             <thead class="text-xs text-gray-400 uppercase bg-gray-700/50">
                                 <tr>
-                                    <th class="px-6 py-3">Name</th>
-                                    <th class="px-6 py-3">Location</th>
-                                    <th class="px-6 py-3">Ports</th>
+                                    <th class="px-6 py-3">Nama</th>
+                                    <th class="px-6 py-3">Lokasi</th>
+                                    <th class="px-6 py-3">Port</th>
                                     <th class="px-6 py-3">Status</th>
-                                    <th class="px-6 py-3">Action</th>
+                                    <th class="px-6 py-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

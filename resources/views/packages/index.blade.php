@@ -2,11 +2,11 @@
     <x-slot name="header">
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search Packages...'" />
+                <x-filter-global :search-placeholder="'Cari Paket...'" />
             </x-slot>
 
             <x-slot name="filters">
-                <x-filter-select name="status" label="Status" :options="['active' => 'Active', 'inactive' => 'Inactive']"
+                <x-filter-select name="status" label="Status" :options="['active' => 'Aktif', 'inactive' => 'Nonaktif']"
                     :selected="request('status')" />
             </x-slot>
 
@@ -16,7 +16,7 @@
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
-                    Add Package
+                    Tambah Paket
                 </a>
             </x-slot>
         </x-filter-bar>
@@ -37,7 +37,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-2xl font-bold text-white">{{ $packages->count() }}</p>
-                            <p class="text-gray-400 text-sm">Total Packages</p>
+                            <p class="text-gray-400 text-sm">Total Paket</p>
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,8 @@
                             </div>
 
                             <p class="text-gray-400 text-sm mb-4 line-clamp-2">
-                                {{ $package->description ?? 'No description' }}</p>
+                                {{ $package->description ?? 'No description' }}
+                            </p>
 
                             <div class="flex items-end justify-between">
                                 <div>

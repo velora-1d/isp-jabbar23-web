@@ -6,11 +6,11 @@
         <!-- Header with Filters -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
-                <x-filter-global :search-placeholder="'Search IP Pool...'" />
+                <x-filter-global :search-placeholder="'Cari IP Pool...'" />
             </x-slot>
 
             <x-slot name="filters">
-                <x-filter-select name="type" label="Type" :options="$types" :selected="request('type')" />
+                <x-filter-select name="type" label="Tipe" :options="$types" :selected="request('type')" />
             </x-slot>
 
             <x-slot name="actions">
@@ -46,7 +46,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-400">Total Pools</p>
+                        <p class="text-sm text-gray-400">Total Pool</p>
                         <p class="text-2xl font-bold text-white">{{ $stats['total_pools'] }}</p>
                     </div>
                 </div>
