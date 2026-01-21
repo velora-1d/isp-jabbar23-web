@@ -16,7 +16,144 @@
   <!-- Scripts -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   @stack('styles')
-</head>
+
+  <!-- Header Animation Styles -->
+  <style>
+    /* Floating Orb Animation */
+    @keyframes float-slow {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.1;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.2;
+      }
+    }
+
+    @keyframes float-slow-reverse {
+
+      0%,
+      100% {
+        transform: translate(50%, -50%) scale(1.2);
+        opacity: 0.2;
+      }
+
+      50% {
+        transform: translate(50%, -50%) scale(1);
+        opacity: 0.1;
+      }
+    }
+
+    .animate-float-slow {
+      animation: float-slow 6s ease-in-out infinite;
+    }
+
+    .animate-float-slow-reverse {
+      animation: float-slow-reverse 6s ease-in-out infinite;
+    }
+
+    /* Wave Animation */
+    @keyframes wave-flow-1 {
+      0% {
+        stroke-dashoffset: 0;
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+
+      100% {
+        stroke-dashoffset: -50;
+        opacity: 0.3;
+      }
+    }
+
+    @keyframes wave-flow-2 {
+      0% {
+        stroke-dashoffset: 0;
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+
+      100% {
+        stroke-dashoffset: -30;
+        opacity: 0.2;
+      }
+    }
+
+    .animate-wave-1 {
+      stroke-dasharray: 10 5;
+      animation: wave-flow-1 3s linear infinite;
+    }
+
+    .animate-wave-2 {
+      stroke-dasharray: 8 4;
+      animation: wave-flow-2 4s linear infinite;
+    }
+
+    /* Particle Animation */
+    @keyframes particle-float-1 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.2);
+        opacity: 1;
+      }
+    }
+
+    @keyframes particle-float-2 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.4;
+      }
+
+      50% {
+        transform: translateY(-6px) scale(1.1);
+        opacity: 0.8;
+      }
+    }
+
+    @keyframes particle-float-3 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: translateY(-10px) scale(1.3);
+        opacity: 0.9;
+      }
+    }
+
+    .animate-particle-1 {
+      animation: particle-float-1 2.5s ease-in-out infinite;
+    }
+
+    .animate-particle-2 {
+      animation: particle-float-2 3s ease-in-out infinite 0.5s;
+    }
+
+    .animate-particle-3 {
+      animation: particle-float-3 2s ease-in-out infinite 1s;
+    }
+  </style>
 
 <body class="font-sans antialiased bg-gray-900 text-white">
 
@@ -27,8 +164,64 @@
   <x-page-loader />
 
   <!-- Navbar Fixed Top -->
-  <nav class="fixed top-0 z-50 w-full bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50">
-    <div class="px-3 py-2.5 lg:px-5">
+  <nav class="fixed top-0 z-50 w-full bg-gray-900/95 backdrop-blur-xl border-b border-gray-800/50 overflow-hidden">
+    <!-- Animated Background Ornaments -->
+    <div class="absolute inset-0 pointer-events-none">
+      <!-- Left Side Ornaments -->
+      <div class="absolute left-0 top-0 h-full w-1/3 overflow-hidden">
+        <!-- Floating Orb 1 -->
+        <div
+          class="absolute -left-4 top-1/2 -translate-y-1/2 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl animate-float-slow">
+        </div>
+        <!-- Signal Wave Lines -->
+        <svg class="absolute left-8 top-1/2 -translate-y-1/2 w-48 h-12 opacity-30" viewBox="0 0 200 50">
+          <path class="animate-wave-1" d="M0,25 Q25,10 50,25 T100,25 T150,25 T200,25" fill="none"
+            stroke="url(#gradient-left)" stroke-width="1.5" />
+          <path class="animate-wave-2" d="M0,25 Q25,40 50,25 T100,25 T150,25 T200,25" fill="none"
+            stroke="url(#gradient-left)" stroke-width="1" />
+          <defs>
+            <linearGradient id="gradient-left" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="transparent" />
+              <stop offset="50%" stop-color="#22d3ee" />
+              <stop offset="100%" stop-color="transparent" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- Floating Particles -->
+        <div class="absolute left-16 top-3 w-1.5 h-1.5 bg-cyan-400/60 rounded-full animate-particle-1"></div>
+        <div class="absolute left-24 top-8 w-1 h-1 bg-blue-400/40 rounded-full animate-particle-2"></div>
+        <div class="absolute left-32 top-2 w-1 h-1 bg-teal-400/50 rounded-full animate-particle-3"></div>
+      </div>
+
+      <!-- Right Side Ornaments (Mirrored) -->
+      <div class="absolute right-0 top-0 h-full w-1/3 overflow-hidden">
+        <!-- Floating Orb 2 -->
+        <div
+          class="absolute -right-4 top-1/2 -translate-y-1/2 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl animate-float-slow-reverse">
+        </div>
+        <!-- Signal Wave Lines -->
+        <svg class="absolute right-8 top-1/2 -translate-y-1/2 w-48 h-12 opacity-30 transform scale-x-[-1]"
+          viewBox="0 0 200 50">
+          <path class="animate-wave-1" d="M0,25 Q25,10 50,25 T100,25 T150,25 T200,25" fill="none"
+            stroke="url(#gradient-right)" stroke-width="1.5" />
+          <path class="animate-wave-2" d="M0,25 Q25,40 50,25 T100,25 T150,25 T200,25" fill="none"
+            stroke="url(#gradient-right)" stroke-width="1" />
+          <defs>
+            <linearGradient id="gradient-right" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="transparent" />
+              <stop offset="50%" stop-color="#2dd4bf" />
+              <stop offset="100%" stop-color="transparent" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- Floating Particles -->
+        <div class="absolute right-16 top-3 w-1.5 h-1.5 bg-teal-400/60 rounded-full animate-particle-1"></div>
+        <div class="absolute right-24 top-8 w-1 h-1 bg-cyan-400/40 rounded-full animate-particle-2"></div>
+        <div class="absolute right-32 top-2 w-1 h-1 bg-blue-400/50 rounded-full animate-particle-3"></div>
+      </div>
+    </div>
+
+    <div class="px-3 py-2.5 lg:px-5 relative z-10">
       <div class="flex items-center justify-between">
         <!-- Left: Hamburger Menu (Mobile) -->
         <div class="flex items-center">
