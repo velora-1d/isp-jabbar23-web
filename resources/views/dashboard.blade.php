@@ -113,7 +113,8 @@
                                 onchange="this.form.submit()">
                                 <option value="">Semua Paket</option>
                                 @foreach($packages ?? [] as $package)
-                                    <option value="{{ $package->id }}" {{ request('package_id') == $package->id ? 'selected' : '' }}>{{ $package->name }}</option>
+                                    <option value="{{ optional($package)->id }}" {{ request('package_id') == optional($package)->id ? 'selected' : '' }}>
+                                        {{ optional($package)->name }}</option>
                                 @endforeach
                             </select>
 
@@ -745,7 +746,7 @@
                                 });
                             }
                         @endif
-                                                    });
+                                                                    });
             </script>
         @endpush
     @endif
