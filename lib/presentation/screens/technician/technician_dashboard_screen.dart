@@ -28,6 +28,8 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen> {
   Map<String, dynamic>? _activeJob;
   List<dynamic> _recentJobs = [];
   String? _userName;
+  String? _userPosition;
+  String? _userDepartment;
 
   @override
   void initState() {
@@ -62,6 +64,12 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen> {
         final data = json.decode(response.body);
         if (mounted) {
           setState(() {
+            // Parse user data
+            if (data['user'] != null) {
+              _userName = data['user']['name'] ?? 'Teknisi';
+              _userPosition = data['user']['position'];
+              _userDepartment = data['user']['department'];
+            }
             _stats = data['stats'];
             _activeJob = data['active_job'];
             _recentJobs = data['recent_jobs'] ?? [];
@@ -201,11 +209,15 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Halo, Teknisi",
-                  style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text(
+                _userPosition != null && _userPosition!.isNotEmpty
+                    ? "$_userPosition${_userDepartment != null && _userDepartment!.isNotEmpty ? ' - $_userDepartment' : ''}"
+                    : "Teknisi",
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
               const SizedBox(height: 4),
               Text(
-                _userName ?? "User",
+                "Halo, ${_userName ?? 'User'}!",
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,

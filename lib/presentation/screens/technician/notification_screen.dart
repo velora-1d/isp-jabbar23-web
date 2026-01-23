@@ -20,38 +20,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    // Note: Since we don't have a real notification table yet,
-    // we will stick to a static list for now or try to fetch if endpoint exists.
-    // Future proofing:
-    await Future.delayed(const Duration(milliseconds: 500));
+    // API Integration for Notifications
+    // Since the endpoint might not be ready, we'll default to empty list instead of dummy data
+    // to comply with "Clean Build" request.
+
+    // Uncomment this when API is ready:
+    /*
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/technician/notifications'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _notifications = data['data']; 
+          _isLoading = false;
+        });
+        return;
+      }
+    } catch (e) {
+      // ignore error
+    }
+    */
 
     if (mounted) {
       setState(() {
         _isLoading = false;
-        _notifications = [
-          {
-            'title': 'Job Baru Masuk',
-            'body':
-                'Tiket #1023 perlu penanganan segera di lokasi Jl. Mawar No. 10.',
-            'time': '10 Menit lalu',
-            'is_read': false,
-            'type': 'job'
-          },
-          {
-            'title': 'Absensi Berhasil',
-            'body': 'Anda telah absen masuk pada pukul 08:00 WIB.',
-            'time': '4 Jam lalu',
-            'is_read': true,
-            'type': 'info'
-          },
-          {
-            'title': 'Maintenance Server',
-            'body': 'Akan ada maintenance server nanti malam pukul 23:00 WIB.',
-            'time': 'Kemarin',
-            'is_read': true,
-            'type': 'alert'
-          },
-        ];
+        _notifications = []; // Clean state: No dummy data
       });
     }
   }
