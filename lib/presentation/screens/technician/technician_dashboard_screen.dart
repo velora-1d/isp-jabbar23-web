@@ -11,6 +11,7 @@ import 'job_detail_screen.dart';
 import '../profile/profile_screen.dart'; // Reuse user profile for now
 import 'inventory_screen.dart';
 import 'attendance_screen.dart';
+import 'notification_screen.dart';
 
 class TechnicianDashboardScreen extends StatefulWidget {
   const TechnicianDashboardScreen({super.key});
@@ -176,10 +177,15 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen> {
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.notifications_none, color: Colors.white),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.notifications_none, color: Colors.white),
+            ),
           ),
         ],
       ),
