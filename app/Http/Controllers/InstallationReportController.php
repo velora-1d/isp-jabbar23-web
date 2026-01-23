@@ -111,12 +111,17 @@ class InstallationReportController extends Controller
 
     public function edit(InstallationReport $installationReport)
     {
-        return view('field.installation-reports.edit', compact('installationReport'));
+        $workOrders = \App\Models\WorkOrder::with('customer')->orderBy('id', 'desc')->get();
+        return view('field.installation-reports.edit', compact('installationReport', 'workOrders'));
     }
 
     public function update(Request $request, InstallationReport $installationReport)
     {
         $validated = $request->validate([
+            'work_order_id' => 'required|exists:work_orders,id',
+            'installation_date' => 'required|date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
             'status' => 'required|in:completed,partial,failed,rescheduled',
             'work_performed' => 'required|string',
             'issues_found' => 'nullable|string',
