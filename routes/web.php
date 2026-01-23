@@ -279,11 +279,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('api-management', \App\Http\Controllers\ApiManagementController::class)->except(['edit', 'update', 'show']);
         });
         
-        // Profile Routes (Inside Dashboard)
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    });
+    // Profile Routes (Inside Dashboard)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // ============================================
