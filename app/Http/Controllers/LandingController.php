@@ -24,6 +24,25 @@ class LandingController extends Controller
             'support' => '24/7'
         ];
 
-        return view('welcome', compact('packages', 'stats'));
+    public function coverage(Request $request)
+    {
+        $query = $request->input('q');
+        $results = [];
+
+        if ($query) {
+            // Search ODPs by location name, district, or village
+            // Assuming ODP model has 'name', 'location_description', 'distict' etc.
+            // Adjust column names based on actual ODP table structure
+            $results = \App\Models\Network\Odp::where('name', 'like', "%{$query}%")
+                ->orWhere('location_description', 'like', "%{$query}%")
+                ->get();
+        }
+
+        return view('landing.coverage', compact('results', 'query'));
+    }
+
+    public function contact()
+    {
+        return view('landing.contact');
     }
 }
