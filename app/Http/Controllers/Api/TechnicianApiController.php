@@ -40,6 +40,14 @@ class TechnicianApiController extends Controller
             ->first();
 
         return response()->json([
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'position' => $user->position,
+                'department' => $user->department,
+                'role' => $user->roles->first()?->name ?? 'technician',
+            ],
             'stats' => [
                 'total' => $totalJobs,
                 'pending' => $pendingJobs,
