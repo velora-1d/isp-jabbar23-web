@@ -363,7 +363,7 @@
                         </li>
                     </ul>
 
-                    <a href="https://wa.me/6281234567890?text=Halo%20saya%20tertarik%20pasang%20paket%20{{ urlencode($package->name) }}" target="_blank"
+                    <a href="https://wa.me/{{ $company_wa ?? '6281234567890' }}?text=Halo%20saya%20tertarik%20pasang%20paket%20{{ urlencode($package->name) }}" target="_blank"
                         class="block w-full py-3 px-6 text-center font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 rounded-xl transition-all shadow-lg shadow-blue-500/25">
                         Pilih Paket
                     </a>
@@ -383,7 +383,7 @@
             <p class="text-lg text-gray-400 mb-8">Hubungi kami sekarang untuk konsultasi gratis dan survey lokasi</p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="https://wa.me/6281234567890" target="_blank"
+                <a href="https://wa.me/{{ $company_wa ?? '6281234567890' }}" target="_blank"
                     class="px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 shadow-xl shadow-emerald-500/25 inline-flex items-center justify-center">
                     <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path
