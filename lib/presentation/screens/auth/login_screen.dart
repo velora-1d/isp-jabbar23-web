@@ -73,9 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
         const allowedRoles = ['customer', 'technician', 'super', 'admin'];
 
         if (!allowedRoles.contains(role)) {
-           ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Akses Ditolak. Role "$role" tidak diizinkan di aplikasi mobile.'),
+              content: Text(
+                  'Akses Ditolak. Role "$role" tidak diizinkan di aplikasi mobile.'),
               backgroundColor: AppColors.error,
               duration: const Duration(seconds: 4),
             ),
@@ -86,7 +87,8 @@ class _LoginScreenState extends State<LoginScreen> {
         // Redirect based on Role
         if (role == 'technician') {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const TechnicianDashboardScreen()),
+            MaterialPageRoute(
+                builder: (_) => const TechnicianDashboardScreen()),
           );
         } else {
           // Default ke Dashboard Pelanggan (termasuk super admin u/ testing)
@@ -94,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
           );
         }
-
       } else {
         // Login Failed
         if (!mounted) return;
@@ -185,9 +186,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
 
               // Email Field
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Email', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                child: Text('Email',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -196,7 +200,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   hintText: 'nama@email.com',
                   hintStyle: TextStyle(color: Colors.grey.shade400),
-                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary),
+                  prefixIcon: const Icon(Icons.email_outlined,
+                      color: AppColors.textSecondary),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -217,9 +222,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
 
               // Password Field
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Kata Sandi', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                child: Text('Kata Sandi',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary)),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -228,10 +236,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   hintText: '••••••••',
                   hintStyle: TextStyle(color: Colors.grey.shade400),
-                  prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                  prefixIcon: const Icon(Icons.lock_outline,
+                      color: AppColors.textSecondary),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      _isPasswordVisible
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       color: AppColors.textSecondary,
                     ),
                     onPressed: () {
@@ -264,7 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {},
-                  child: const Text('Lupa Kata Sandi?', style: TextStyle(color: AppColors.primaryBlue)),
+                  child: const Text('Lupa Kata Sandi?',
+                      style: TextStyle(color: AppColors.primaryBlue)),
                 ),
               ),
 
@@ -289,7 +301,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
                         )
                       : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,

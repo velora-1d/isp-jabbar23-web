@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_config.dart';
-import '../../../core/widgets/app_dialog.dart';
+
 import 'create_ticket_screen.dart';
 
 class TicketListScreen extends StatefulWidget {
@@ -123,7 +123,8 @@ class _TicketListScreenState extends State<TicketListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.history, size: 64, color: Colors.grey.shade300),
+                          Icon(Icons.history,
+                              size: 64, color: Colors.grey.shade300),
                           const SizedBox(height: 16),
                           Text(
                             'Belum ada riwayat pengaduan',
@@ -172,24 +173,31 @@ class _TicketListScreenState extends State<TicketListScreen> {
                                   ticket['description'] ?? '-',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: AppColors.textSecondary),
+                                  style: const TextStyle(
+                                      color: AppColors.textSecondary),
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
-                                    Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade400),
+                                    Icon(Icons.calendar_today,
+                                        size: 14, color: Colors.grey.shade400),
                                     const SizedBox(width: 4),
                                     Text(
                                       date,
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600),
                                     ),
                                     const Spacer(),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: _getStatusColor(status).withOpacity(0.1),
+                                        color: _getStatusColor(status)
+                                            .withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: _getStatusColor(status)),
+                                        border: Border.all(
+                                            color: _getStatusColor(status)),
                                       ),
                                       child: Text(
                                         _getStatusLabel(status),

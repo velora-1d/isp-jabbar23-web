@@ -32,7 +32,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
       return;
     }
 
@@ -59,7 +59,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           AppDialog.showError(
             context,
             title: 'Gagal Memuat Data',
-            message: 'Tidak dapat memuat daftar tagihan.\nKode: ${response.statusCode}',
+            message:
+                'Tidak dapat memuat daftar tagihan.\nKode: ${response.statusCode}',
           );
         }
       }
@@ -116,8 +117,10 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     },
                     selectedColor: AppColors.primaryBlue,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color:
+                          isSelected ? Colors.white : AppColors.textSecondary,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     backgroundColor: AppColors.surface,
                   ),
@@ -172,7 +175,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     final isPaid = invoice['status'] == 'paid';
     final amount = invoice['amount'] ?? 0;
     final periodStart = invoice['period_start'] ?? '';
-    final periodEnd = invoice['period_end'] ?? '';
+
     final dueDate = invoice['due_date'] ?? '';
     final invoiceNumber = invoice['invoice_number'] ?? '-';
 
@@ -181,7 +184,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     if (periodStart.isNotEmpty) {
       try {
         final startDate = DateTime.parse(periodStart);
-        periodDisplay = _getMonthName(startDate.month) + ' ' + startDate.year.toString();
+        periodDisplay = '${_getMonthName(startDate.month)} ${startDate.year}';
       } catch (_) {}
     }
 
@@ -215,7 +218,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: isPaid
                         ? AppColors.success.withOpacity(0.1)
@@ -285,7 +289,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                     ),
                     child: const Text('Bayar'),
                   ),
@@ -295,7 +300,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 14, color: AppColors.textSecondary),
+                  const Icon(Icons.calendar_today,
+                      size: 14, color: AppColors.textSecondary),
                   const SizedBox(width: 4),
                   Text(
                     'Jatuh Tempo: ${_formatDate(dueDate)}',
@@ -315,8 +321,18 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   String _getMonthName(int month) {
     const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
     ];
     return months[month - 1];
   }
@@ -324,9 +340,9 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   String _formatNumber(dynamic number) {
     final n = (number is String) ? double.tryParse(number) ?? 0 : number;
     return n.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
   }
 
   String _formatDate(String dateString) {

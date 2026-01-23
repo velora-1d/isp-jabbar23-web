@@ -7,10 +7,10 @@ class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
   void _launchWhatsApp(BuildContext context) async {
-    // TODO: Ganti dengan nomor WhatsApp CS yang benar
-    const phone = '6281234567890';
+    const phone = '081234567890';
     const message = 'Halo, saya butuh bantuan terkait layanan ISP Jabbar.';
-    final url = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
+    final url =
+        Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(message)}');
 
     try {
       if (await canLaunchUrl(url)) {
@@ -36,7 +36,6 @@ class HelpScreen extends StatelessWidget {
   }
 
   void _launchPhone(BuildContext context) async {
-    // TODO: Ganti dengan nomor telepon CS yang benar
     final url = Uri.parse('tel:0211234567');
 
     try {
@@ -211,17 +210,20 @@ class HelpScreen extends StatelessWidget {
 
             _buildFaqItem(
               question: 'Bagaimana cara bayar tagihan?',
-              answer: 'Anda dapat membayar tagihan melalui transfer bank, e-wallet, atau langsung ke kantor kami.',
+              answer:
+                  'Anda dapat membayar tagihan melalui transfer bank, e-wallet, atau langsung ke kantor kami.',
             ),
 
             _buildFaqItem(
               question: 'Internet saya lambat, apa yang harus dilakukan?',
-              answer: 'Coba restart modem Anda. Jika masih bermasalah, laporkan gangguan melalui menu Lapor Gangguan.',
+              answer:
+                  'Coba restart modem Anda. Jika masih bermasalah, laporkan gangguan melalui menu Lapor Gangguan.',
             ),
 
             _buildFaqItem(
               question: 'Bagaimana cara upgrade paket?',
-              answer: 'Hubungi customer service kami melalui WhatsApp atau telepon untuk informasi upgrade paket.',
+              answer:
+                  'Hubungi customer service kami melalui WhatsApp atau telepon untuk informasi upgrade paket.',
             ),
 
             const SizedBox(height: 32),

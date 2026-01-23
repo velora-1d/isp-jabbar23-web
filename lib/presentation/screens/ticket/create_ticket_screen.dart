@@ -19,9 +19,17 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   final List<Map<String, dynamic>> _issueTypes = [
-    {'id': 'no_internet', 'label': 'Tidak Ada Internet', 'icon': Icons.wifi_off},
+    {
+      'id': 'no_internet',
+      'label': 'Tidak Ada Internet',
+      'icon': Icons.wifi_off
+    },
     {'id': 'slow_connection', 'label': 'Koneksi Lambat', 'icon': Icons.speed},
-    {'id': 'device_problem', 'label': 'Masalah Perangkat', 'icon': Icons.router},
+    {
+      'id': 'device_problem',
+      'label': 'Masalah Perangkat',
+      'icon': Icons.router
+    },
     {'id': 'other', 'label': 'Lainnya', 'icon': Icons.help_outline},
   ];
 
@@ -58,12 +66,13 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
       return;
     }
 
     try {
-      final issueLabel = _issueTypes.firstWhere((e) => e['id'] == _selectedIssue)['label'];
+      final issueLabel =
+          _issueTypes.firstWhere((e) => e['id'] == _selectedIssue)['label'];
 
       final response = await http.post(
         Uri.parse('${AppConfig.baseUrl}/customer/tickets'),
@@ -95,9 +104,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       } else {
         if (mounted) {
           AppDialog.showError(
-             context,
-             title: 'Gagal Kirim',
-             message: 'Gagal mengirim laporan: ${response.statusCode}',
+            context,
+            title: 'Gagal Kirim',
+            message: 'Gagal mengirim laporan: ${response.statusCode}',
           );
         }
       }
@@ -166,7 +175,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       color: isSelected ? AppColors.primaryBlue : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? AppColors.primaryBlue : Colors.grey.shade200,
+                        color: isSelected
+                            ? AppColors.primaryBlue
+                            : Colors.grey.shade200,
                         width: 2,
                       ),
                       boxShadow: [
@@ -183,7 +194,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                         Icon(
                           issue['icon'],
                           size: 36,
-                          color: isSelected ? Colors.white : AppColors.primaryBlue,
+                          color:
+                              isSelected ? Colors.white : AppColors.primaryBlue,
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -192,7 +204,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
                           ),
                         ),
                       ],
@@ -259,7 +273,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
                       )
                     : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,

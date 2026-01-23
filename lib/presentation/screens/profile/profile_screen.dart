@@ -21,7 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
   Map<String, dynamic>? _customerData;
   Map<String, dynamic>? _packageData;
-  bool _isLoadingData = true;
 
   @override
   void initState() {
@@ -40,9 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Fetch detailed data only if customer
     if (_userRole == 'customer') {
       await _fetchCustomerData();
-    } else {
-      setState(() => _isLoadingData = false);
-    }
+    } else {}
   }
 
   Future<void> _fetchCustomerData() async {
@@ -66,7 +63,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             _customerData = data['customer'];
             _packageData = data['package'];
-            _isLoadingData = false;
           });
         }
       }
@@ -111,7 +107,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showAddressInfo() {
     if (_customerData == null) {
-      AppDialog.showError(context, title: 'Data Belum Dimuat', message: 'Mohon tunggu sebentar atau refresh halaman.');
+      AppDialog.showError(context,
+          title: 'Data Belum Dimuat',
+          message: 'Mohon tunggu sebentar atau refresh halaman.');
       return;
     }
 
@@ -130,7 +128,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: AppColors.primaryBlue.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.location_on, size: 32, color: AppColors.primaryBlue),
+                child: const Icon(Icons.location_on,
+                    size: 32, color: AppColors.primaryBlue),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -141,9 +140,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 _customerData?['address'] ?? 'Alamat tidak tersedia',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 16, color: AppColors.textSecondary),
               ),
-               const SizedBox(height: 24),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -151,7 +151,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text('Tutup'),
                 ),
@@ -165,7 +166,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showPackageInfo() {
     if (_packageData == null) {
-      AppDialog.showError(context, title: 'Data Belum Dimuat', message: 'Mohon tunggu sebentar atau refresh halaman.');
+      AppDialog.showError(context,
+          title: 'Data Belum Dimuat',
+          message: 'Mohon tunggu sebentar atau refresh halaman.');
       return;
     }
 
@@ -198,18 +201,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 _packageData?['name'] ?? 'Paket Unknown',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue),
               ),
               const SizedBox(height: 8),
               Text(
                 'Speed: $speed Mbps',
-                style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 14, color: AppColors.textSecondary),
               ),
               Text(
                 'Harga: Rp $price / bulan',
-                 style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 14, color: AppColors.textSecondary),
               ),
-               const SizedBox(height: 24),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -217,7 +225,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text('Tutup'),
                 ),
@@ -232,7 +241,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showEditProfileDialog() {
     if (_customerData == null) return;
 
-    final phoneController = TextEditingController(text: _customerData?['phone'] ?? ''); // Assuming 'phone' is in data
+    final phoneController = TextEditingController(
+        text: _customerData?['phone'] ?? ''); // Assuming 'phone' is in data
     bool isLoading = false;
 
     showDialog(
@@ -248,7 +258,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'Nomor WhatsApp / HP',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.phone),
                 ),
               ),
@@ -264,8 +275,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? null
                   : () async {
                       if (phoneController.text.isEmpty) {
-                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nomor HP tidak boleh kosong')));
-                         return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Nomor HP tidak boleh kosong')));
+                        return;
                       }
 
                       setState(() => isLoading = true);
@@ -284,30 +297,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           body: jsonEncode({'phone': phoneController.text}),
                         );
 
-                        if (mounted) {
+                        if (context.mounted) {
                           Navigator.pop(context); // Close dialog
 
                           if (response.statusCode == 200) {
                             AppDialog.show(
-                              context: context,
-                              title: 'Berhasil',
-                              message: 'Profil berhasil diperbarui.',
-                              type: AppDialogType.success
-                            );
+                                context: context,
+                                title: 'Berhasil',
+                                message: 'Profil berhasil diperbarui.',
+                                type: AppDialogType.success);
                             _loadAllData(); // Refresh data
                           } else {
                             final data = jsonDecode(response.body);
-                            AppDialog.showError(context, message: data['message'] ?? 'Gagal update profil');
+                            AppDialog.showError(context,
+                                message:
+                                    data['message'] ?? 'Gagal update profil');
                           }
                         }
                       } catch (e) {
-                        Navigator.pop(context);
-                        AppDialog.showNetworkError(context);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          AppDialog.showNetworkError(context);
+                        }
                       }
                     },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                  foregroundColor: Colors.white),
               child: isLoading
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2))
                   : const Text('Simpan'),
             ),
           ],
@@ -338,133 +360,135 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
-          children: [
-            // Profile Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                gradient: AppColors.primaryGradient,
-              ),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: Text(
-                      (_userName ?? 'U').substring(0, 1).toUpperCase(),
+            children: [
+              // Profile Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      child: Text(
+                        (_userName ?? 'U').substring(0, 1).toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _userName ?? 'Pelanggan',
                       style: const TextStyle(
-                        fontSize: 32,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _userName ?? 'Pelanggan',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _userEmail ?? '-',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                   const SizedBox(height: 4),
-                   // Display Phone if available
-                   if (_customerData?['phone'] != null)
+                    const SizedBox(height: 4),
                     Text(
-                      _customerData!['phone'],
+                      _userEmail ?? '-',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _userRole?.toUpperCase() ?? 'CUSTOMER',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 4),
+                    // Display Phone if available
+                    if (_customerData?['phone'] != null)
+                      Text(
+                        _customerData!['phone'],
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _userRole?.toUpperCase() ?? 'CUSTOMER',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Menu Items
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  if (_userRole == 'customer') ...[
+              // Menu Items
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    if (_userRole == 'customer') ...[
+                      _buildMenuItem(
+                        icon: Icons.location_on_outlined,
+                        title: 'Info Alamat',
+                        subtitle: 'Lihat alamat pemasangan',
+                        onTap: _showAddressInfo,
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.wifi_outlined,
+                        title: 'Info Paket',
+                        subtitle: 'Lihat detail paket internet',
+                        onTap: _showPackageInfo,
+                      ),
+                    ],
                     _buildMenuItem(
-                      icon: Icons.location_on_outlined,
-                      title: 'Info Alamat',
-                      subtitle: 'Lihat alamat pemasangan',
-                      onTap: _showAddressInfo,
+                      icon: Icons.lock_outline,
+                      title: 'Ganti Password',
+                      subtitle: 'Ubah kata sandi akun',
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen()),
+                        );
+                      },
                     ),
+                    const SizedBox(height: 24),
                     _buildMenuItem(
-                      icon: Icons.wifi_outlined,
-                      title: 'Info Paket',
-                      subtitle: 'Lihat detail paket internet',
-                      onTap: _showPackageInfo,
+                      icon: Icons.logout,
+                      title: 'Keluar',
+                      subtitle: 'Logout dari aplikasi',
+                      iconColor: AppColors.error,
+                      titleColor: AppColors.error,
+                      onTap: _logout,
                     ),
                   ],
-                  _buildMenuItem(
-                    icon: Icons.lock_outline,
-                    title: 'Ganti Password',
-                    subtitle: 'Ubah kata sandi akun',
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  _buildMenuItem(
-                    icon: Icons.logout,
-                    title: 'Keluar',
-                    subtitle: 'Logout dari aplikasi',
-                    iconColor: AppColors.error,
-                    titleColor: AppColors.error,
-                    onTap: _logout,
-                  ),
-                ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // App Version
-            Text(
-              'ISP Jabbar Mobile v1.0.0',
-              style: TextStyle(
-                color: AppColors.textSecondary.withOpacity(0.5),
-                fontSize: 12,
+              // App Version
+              Text(
+                'ISP Jabbar Mobile v1.0.0',
+                style: TextStyle(
+                  color: AppColors.textSecondary.withOpacity(0.5),
+                  fontSize: 12,
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],
+              const SizedBox(height: 32),
+            ],
           ),
-      ),
+        ),
       ),
     );
   }

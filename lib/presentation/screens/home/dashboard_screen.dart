@@ -76,7 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               AppDialog.showError(
                 context,
                 title: 'Gagal Memuat Data',
-                message: 'Terjadi kesalahan saat memuat data.\nKode: ${response.statusCode}',
+                message:
+                    'Terjadi kesalahan saat memuat data.\nKode: ${response.statusCode}',
               );
             }
           }
@@ -181,7 +182,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const NotificationScreen()));
             },
             child: Container(
               padding: const EdgeInsets.all(8),
@@ -236,7 +240,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.success.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -290,26 +295,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-             color: (hasUnpaid ? AppColors.primaryBlue : AppColors.secondaryBlue).withOpacity(0.3),
-             blurRadius: 10,
-             offset: const Offset(0, 4),
+            color: (hasUnpaid ? AppColors.primaryBlue : AppColors.secondaryBlue)
+                .withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Tagihan Bulan Ini",
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.receipt_long,
                 color: Colors.white70,
               ),
@@ -339,7 +345,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const InvoiceListScreen()),
+                    MaterialPageRoute(
+                        builder: (_) => const InvoiceListScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
