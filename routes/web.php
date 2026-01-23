@@ -3,6 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// DEBUG ROUTE (Temp)
+Route::get('/debug-host', function() {
+    return 'Laravel Host: ' . request()->getHost() . ' | Config URL: ' . config('app.url') . ' | Config Dash: ' . config('app.dashboard_domain');
+});
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PackageController;
