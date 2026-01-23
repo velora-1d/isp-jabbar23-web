@@ -63,14 +63,8 @@
                     <a href="{{ route('landing.contact') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors {{ request()->routeIs('landing.contact') ? 'text-blue-400 font-bold' : '' }}">Hubungi Kami</a>
                 </div>
 
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:block">
-                        <a href="https://jabbardash.ve-lora.my.id/login"
-                            class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
-                            Member Login
-                        </a>
-                    </div>
-                </div>
+                <!-- CTA Buttons removed -->
+                <div class="hidden"></div>
             </div>
         </div>
     </nav>

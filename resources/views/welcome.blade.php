@@ -98,12 +98,8 @@
                     <a href="#contact" class="text-gray-400 hover:text-white transition-colors">Kontak</a>
                 </div>
 
-                    <div class="flex items-center space-x-4">
-                        <a href="https://jabbardash.ve-lora.my.id/login"
-                            class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
-                            Member Login
-                        </a>
-                    </div>
+                <!-- CTA Buttons removed as per request (Pure Landing Page) -->
+                <div class="hidden"></div>
             </div>
         </div>
     </nav>
@@ -445,8 +441,7 @@
                         <li><a href="#features" class="hover:text-white transition-colors">Fitur</a></li>
                         <li><a href="#packages" class="hover:text-white transition-colors">Paket</a></li>
                         <li><a href="#contact" class="hover:text-white transition-colors">Kontak</a></li>
-<li><a href="https://jabbardash.ve-lora.my.id/login" class="hover:text-white transition-colors">Login Admin</a>
-                        </li>
+
                     </ul>
                 </div>
 
