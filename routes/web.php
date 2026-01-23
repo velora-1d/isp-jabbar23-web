@@ -49,4 +49,4 @@ Route::get('/login', function() {
 Route::post('payment/webhook', [PaymentController::class, 'handleWebhook'])
     ->name('payment.webhook');
 
-require __DIR__ . '/auth.php';
+// require __DIR__ . '/auth.php'; // DISABLED FOR LANDING PAGE
