@@ -127,7 +127,10 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::with('roles')->findOrFail($id);
+        $internalRoles = ['super-admin', 'admin', 'sales', 'finance', 'noc', 'warehouse', 'hrd', 'technician'];
+        $roles = \Spatie\Permission\Models\Role::whereIn('name', $internalRoles)->get();
+        return view('users.edit', compact('user', 'roles'));
     }
 
     /**
@@ -135,7 +138,51 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8',
+            'role' => 'required|exists:roles,name',
+            // Employee fields (nullable)
+            'nik' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'date_of_birth' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
+            'position' => 'nullable|string|max:100',
+            'department' => 'nullable|string|max:100',
+            'join_date' => 'nullable|date',
+            'emergency_contact_name' => 'nullable|string|max:100',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            // Employee fields
+            'nik' => $request->nik,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'date_of_birth' => $request->date_of_birth,
+            'gender' => $request->gender,
+            'position' => $request->position,
+            'department' => $request->department,
+            'join_date' => $request->join_date,
+            'emergency_contact_name' => $request->emergency_contact_name,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
+        ]);
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $user->update(['password' => bcrypt($request->password)]);
+        }
+
+        // Sync role
+        $user->syncRoles([$request->role]);
+
+        return redirect()->route('users.index')->with('success', 'Data karyawan berhasil diperbarui!');
     }
 
     /**
