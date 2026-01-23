@@ -21,10 +21,9 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\RecurringBillingController;
 
-Route::get('/', function () {
-    // Landing page untuk nanti - sekarang fokus dashboard internal
-    return redirect()->route('login');
-});
+use App\Http\Controllers\LandingController;
+
+Route::get('/', [LandingController::class, 'index'])->name('landing.home');
 
 // ============================================
 // All Authenticated Routes

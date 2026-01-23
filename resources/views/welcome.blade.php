@@ -108,15 +108,9 @@
                             </a>
                         @else
                             <a href="{{ route('login') }}"
-                                class="text-gray-400 hover:text-white transition-colors text-sm font-medium">
-                                Login
+                                class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
+                                Member Login
                             </a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}"
-                                    class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 shadow-lg shadow-blue-500/25">
-                                    Daftar Sekarang
-                                </a>
-                            @endif
                         @endauth
                     @endif
                 </div>
@@ -184,17 +178,17 @@
                     <!-- Trust Badges -->
                     <div class="mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-8">
                         <div class="text-center">
-                            <p class="text-3xl font-bold text-white">1000+</p>
+                            <p class="text-3xl font-bold text-white">{{ $stats['customers'] }}+</p>
                             <p class="text-sm text-gray-500">Pelanggan Aktif</p>
                         </div>
                         <div class="w-px h-12 bg-gray-700"></div>
                         <div class="text-center">
-                            <p class="text-3xl font-bold text-white">99.9%</p>
+                            <p class="text-3xl font-bold text-white">{{ $stats['uptime'] }}</p>
                             <p class="text-sm text-gray-500">Uptime</p>
                         </div>
                         <div class="w-px h-12 bg-gray-700"></div>
                         <div class="text-center">
-                            <p class="text-3xl font-bold text-white">24/7</p>
+                            <p class="text-3xl font-bold text-white">{{ $stats['support'] }}</p>
                             <p class="text-sm text-gray-500">Support</p>
                         </div>
                     </div>
@@ -336,6 +330,7 @@
     </section>
 
     <!-- Packages Section -->
+    <!-- Packages Section -->
     <section id="packages" class="py-24 bg-gray-950">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -346,184 +341,48 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
-                <!-- Basic Package -->
-                <div class="card-hover relative bg-gray-800/50 backdrop-blur rounded-3xl p-8 border border-gray-700/50">
-                    <div class="mb-6">
-                        <h3 class="text-2xl font-bold mb-2">Basic</h3>
-                        <p class="text-gray-500">Untuk browsing & sosmed</p>
+                @foreach($packages as $package)
+                <div class="card-hover relative bg-gray-800/50 backdrop-blur rounded-3xl p-8 border border-gray-700/50 flex flex-col">
+                    @if($package->is_featured ?? false)
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-sm font-semibold shadow-lg">
+                        Paling Populer
                     </div>
+                    @endif
+                    
                     <div class="mb-6">
-                        <span class="text-4xl font-extrabold">Rp 150k</span>
+                        <h3 class="text-2xl font-bold mb-2">{{ $package->name }}</h3>
+                        <p class="text-gray-500">{{ $package->description ?? 'Internet cepat stabil' }}</p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <span class="text-4xl font-extrabold gradient-text">Rp {{ number_format($package->price, 0, ',', '.') }}</span>
                         <span class="text-gray-500">/bulan</span>
                     </div>
-                    <ul class="space-y-4 mb-8">
+
+                    <ul class="space-y-4 mb-8 flex-grow">
+                        <!-- Speed -->
                         <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Up to 10 Mbps
+                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            Up to {{ $package->download_speed }} Mbps
+                        </li>
+                        
+                        <!-- Dynamic Features (if stored in json or description) -->
+                        <li class="flex items-center text-gray-300">
+                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            Tanpa FUP (Unlimited)
                         </li>
                         <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Tanpa FUP
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Free Router WiFi
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
+                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                             Support 24/7
                         </li>
                     </ul>
-                    <a href="#contact"
-                        class="block w-full py-3 px-6 text-center font-semibold text-white bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors">
-                        Pilih Paket
-                    </a>
-                </div>
 
-                <!-- Pro Package (Popular) -->
-                <div
-                    class="card-hover relative bg-gradient-to-b from-blue-900/50 to-gray-800/50 backdrop-blur rounded-3xl p-8 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10">
-                    <div
-                        class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-sm font-semibold">
-                        Paling Populer
-                    </div>
-                    <div class="mb-6">
-                        <h3 class="text-2xl font-bold mb-2">Pro</h3>
-                        <p class="text-gray-500">Untuk streaming & kerja</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-extrabold gradient-text">Rp 250k</span>
-                        <span class="text-gray-500">/bulan</span>
-                    </div>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Up to 30 Mbps
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Tanpa FUP
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Free Router WiFi Dual Band
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Priority Support
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Static IP
-                        </li>
-                    </ul>
-                    <a href="#contact"
+                    <a href="https://wa.me/6281234567890?text=Halo%20saya%20tertarik%20pasang%20paket%20{{ urlencode($package->name) }}" target="_blank"
                         class="block w-full py-3 px-6 text-center font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 rounded-xl transition-all shadow-lg shadow-blue-500/25">
                         Pilih Paket
                     </a>
                 </div>
-
-                <!-- Business Package -->
-                <div class="card-hover relative bg-gray-800/50 backdrop-blur rounded-3xl p-8 border border-gray-700/50">
-                    <div class="mb-6">
-                        <h3 class="text-2xl font-bold mb-2">Business</h3>
-                        <p class="text-gray-500">Untuk kantor & usaha</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-extrabold">Rp 500k</span>
-                        <span class="text-gray-500">/bulan</span>
-                    </div>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Up to 100 Mbps
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Tanpa FUP
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Enterprise Router
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Dedicated Support
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            Multiple Static IP
-                        </li>
-                        <li class="flex items-center text-gray-300">
-                            <svg class="w-5 h-5 text-emerald-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            SLA Guarantee
-                        </li>
-                    </ul>
-                    <a href="#contact"
-                        class="block w-full py-3 px-6 text-center font-semibold text-white bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors">
-                        Pilih Paket
-                    </a>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
