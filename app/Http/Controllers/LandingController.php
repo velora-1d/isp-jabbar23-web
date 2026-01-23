@@ -24,6 +24,9 @@ class LandingController extends Controller
             'support' => '24/7'
         ];
 
+        return view('welcome', compact('packages', 'stats'));
+    }
+
     public function coverage(Request $request)
     {
         $query = $request->input('q');
