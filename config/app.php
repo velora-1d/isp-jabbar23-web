@@ -54,6 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'dashboard_domain' => env('APP_DASHBOARD_DOMAIN', 'jabbardash.ve-lora.my.id'),
+
+    'asset_url' => env('ASSET_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -33,7 +33,7 @@ Route::get('/hubungi-kami', [LandingController::class, 'contact'])->name('landin
 // ============================================
 // Dashboard / Admin Routes (jabbardash.ve-lora.my.id)
 // ============================================
-Route::domain(env('APP_DASHBOARD_DOMAIN', 'jabbardash.ve-lora.my.id'))->group(function () {
+Route::domain(config('app.dashboard_domain', 'jabbardash.ve-lora.my.id'))->group(function () {
     
     // Auth Routes for Dashboard (Login, Register, etc)
     require __DIR__ . '/auth.php';
