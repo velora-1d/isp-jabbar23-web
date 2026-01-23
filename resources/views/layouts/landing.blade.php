@@ -63,23 +63,13 @@
                     <a href="{{ route('landing.contact') }}" class="text-sm font-medium text-gray-300 hover:text-white transition-colors {{ request()->routeIs('landing.contact') ? 'text-blue-400 font-bold' : '' }}">Hubungi Kami</a>
                 </div>
 
-                <!-- CTA Buttons -->
                 <div class="flex items-center space-x-4">
-                    @if (Route::has('login'))
-                        <div class="hidden md:block">
-                            @auth
-                                <a href="{{ url('/dashboard') }}"
-                                    class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 shadow-lg shadow-blue-500/25">
-                                    Dashboard
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}"
-                                    class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
-                                    Member Login
-                                </a>
-                            @endauth
-                        </div>
-                    @endif
+                    <div class="hidden md:block">
+                        <a href="https://jabbardash.ve-lora.my.id/login"
+                            class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
+                            Member Login
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

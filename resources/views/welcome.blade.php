@@ -98,22 +98,12 @@
                     <a href="#contact" class="text-gray-400 hover:text-white transition-colors">Kontak</a>
                 </div>
 
-                <!-- CTA Buttons -->
-                <div class="flex items-center space-x-4">
-                    @if (Route::has('login'))
-                        @auth
-                            <a href="{{ url('/dashboard') }}"
-                                class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 shadow-lg shadow-blue-500/25">
-                                Dashboard
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}"
-                                class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
-                                Member Login
-                            </a>
-                        @endauth
-                    @endif
-                </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="https://jabbardash.ve-lora.my.id/login"
+                            class="px-5 py-2.5 text-sm font-semibold text-white border border-gray-700 hover:bg-gray-800 rounded-xl transition-all duration-200">
+                            Member Login
+                        </a>
+                    </div>
             </div>
         </div>
     </nav>
@@ -455,7 +445,7 @@
                         <li><a href="#features" class="hover:text-white transition-colors">Fitur</a></li>
                         <li><a href="#packages" class="hover:text-white transition-colors">Paket</a></li>
                         <li><a href="#contact" class="hover:text-white transition-colors">Kontak</a></li>
-                        <li><a href="{{ route('login') }}" class="hover:text-white transition-colors">Login Admin</a>
+<li><a href="https://jabbardash.ve-lora.my.id/login" class="hover:text-white transition-colors">Login Admin</a>
                         </li>
                     </ul>
                 </div>
