@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_config.dart';
 
@@ -93,7 +94,23 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitFadingCube(
+                    color: AppColors.primaryBlue,
+                    size: 50.0,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Memuat data...',
+                    style:
+                        TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  ),
+                ],
+              ),
+            )
           : RefreshIndicator(
               onRefresh: _loadDashboardData,
               child: SingleChildScrollView(
