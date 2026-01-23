@@ -29,31 +29,14 @@ use App\Http\Controllers\RecurringBillingController;
 use App\Http\Controllers\LandingController;
 
 // ============================================
-// Landing Page Routes (HARDCODED DOMAIN)
+// DASHBOARD ONLY ROUTES
 // ============================================
-Route::domain('jabbar.ve-lora.my.id')->group(function () {
-    Route::get('/', [LandingController::class, 'index'])->name('landing.home');
-    Route::get('/jangkauan', [LandingController::class, 'coverage'])->name('landing.coverage');
-    Route::get('/hubungi-kami', [LandingController::class, 'contact'])->name('landing.contact');
-});
 
-// ============================================
-// All Authenticated Routes
-// ============================================
-// ============================================
-// Dashboard / Admin Routes (HARDCODED DOMAIN)
-// ============================================
-Route::domain('jabbardash.ve-lora.my.id')->group(function () {
-    
-    // Auth Routes for Dashboard (Login, Register, etc)
-    require __DIR__ . '/auth.php';
+Route::redirect('/', '/login');
 
-    // Explicit Redirect for Dashboard Root
-    Route::redirect('/', '/login');
-
-    Route::middleware(['auth', 'verified'])->group(function () {
-        // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
         // ... (Keep all existing dashboard routes here) ...
         // User & Role Management
