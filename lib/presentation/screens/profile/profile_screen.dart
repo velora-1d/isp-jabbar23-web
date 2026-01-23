@@ -37,8 +37,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userRole = prefs.getString('user_role') ?? 'customer';
     });
 
-    // Fetch detailed data
-    await _fetchCustomerData();
+    // Fetch detailed data only if customer
+    if (_userRole == 'customer') {
+      await _fetchCustomerData();
+    } else {
+      setState(() => _isLoadingData = false);
+    }
   }
 
   Future<void> _fetchCustomerData() async {
@@ -67,7 +71,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
     } catch (e) {
-      // Slient fail for profile background update
       debugPrint('Error fetching profile data: $e');
     }
   }
@@ -411,18 +414,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  _buildMenuItem(
-                    icon: Icons.location_on_outlined,
-                    title: 'Info Alamat',
-                    subtitle: 'Lihat alamat pemasangan',
-                    onTap: _showAddressInfo,
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.wifi_outlined,
-                    title: 'Info Paket',
-                    subtitle: 'Lihat detail paket internet',
-                    onTap: _showPackageInfo,
-                  ),
+                  if (_userRole == 'customer') ...[
+                    _buildMenuItem(
+                      icon: Icons.location_on_outlined,
+                      title: 'Info Alamat',
+                      subtitle: 'Lihat alamat pemasangan',
+                      onTap: _showAddressInfo,
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.wifi_outlined,
+                      title: 'Info Paket',
+                      subtitle: 'Lihat detail paket internet',
+                      onTap: _showPackageInfo,
+                    ),
+                  ],
                   _buildMenuItem(
                     icon: Icons.lock_outline,
                     title: 'Ganti Password',

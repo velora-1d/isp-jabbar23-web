@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_config.dart';
 import '../home/dashboard_screen.dart';
+import '../technician/technician_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -84,9 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Redirect based on Role
         if (role == 'technician') {
-          // TODO: Arahkan ke Dashboard Teknisi
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Teknisi Berhasil (Menu belum tersedia)')),
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const TechnicianDashboardScreen()),
           );
         } else {
           // Default ke Dashboard Pelanggan (termasuk super admin u/ testing)
