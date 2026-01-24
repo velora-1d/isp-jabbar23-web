@@ -50,7 +50,9 @@ class SettingController extends Controller
             'midtrans_client_key', 
             'midtrans_merchant_id',
             'wa_api_url', 
-            'wa_api_key'
+            'wa_api_key',
+            'due_date_days',
+            'suspend_grace_period'
         ];
 
         foreach ($inputKeys as $key) {

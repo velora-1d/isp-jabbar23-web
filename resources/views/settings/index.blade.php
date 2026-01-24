@@ -146,7 +146,38 @@
                                 <input type="password" name="wa_api_key" value="{{ $settings['wa_api_key'] ?? '' }}" class="w-full bg-gray-900/50 border border-gray-700 rounded-xl text-white focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
+                        </div>
                     </div>
+
+                    <!-- Section: Otomatisasi & Billing -->
+                    <div class="bg-gray-800 rounded-2xl border border-gray-700/50 p-6 shadow-xl">
+                        <h2 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <span class="p-2 bg-purple-500/10 text-purple-400 rounded-lg mr-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </span>
+                            Otomatisasi Tagihan & Isolir
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Jatuh Tempo (Hari)</label>
+                                <div class="flex items-center">
+                                    <input type="number" name="due_date_days" value="{{ $settings['due_date_days'] ?? '10' }}" class="w-20 bg-gray-900/50 border border-gray-700 rounded-l-xl text-white focus:ring-purple-500 focus:border-purple-500 text-center">
+                                    <span class="px-4 py-2 bg-gray-700/50 border border-l-0 border-gray-700 rounded-r-xl text-gray-400 text-sm">hari setelah terbit</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Invoice dibuat otomatis tgl 1 setiap bulan.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Grace Period Isolir</label>
+                                <div class="flex items-center">
+                                    <input type="number" name="suspend_grace_period" value="{{ $settings['suspend_grace_period'] ?? '3' }}" class="w-20 bg-gray-900/50 border border-gray-700 rounded-l-xl text-white focus:ring-purple-500 focus:border-purple-500 text-center">
+                                    <span class="px-4 py-2 bg-gray-700/50 border border-l-0 border-gray-700 rounded-r-xl text-gray-400 text-sm">hari setelah jatuh tempo</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Pelanggan akan diisolir otomatis setelah melewati batas ini.</p>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <div class="pt-6">
                         <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">

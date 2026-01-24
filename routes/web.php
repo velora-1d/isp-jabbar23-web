@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('olts', \App\Http\Controllers\Network\OltController::class);
             Route::get('monitoring', [\App\Http\Controllers\Network\NetworkMonitoringController::class, 'index'])->name('monitoring.index');
             Route::post('monitoring/ping', [\App\Http\Controllers\Network\NetworkMonitoringController::class, 'ping'])->name('monitoring.ping');
+            Route::get('monitoring/{id}/stats', [\App\Http\Controllers\Network\NetworkMonitoringController::class, 'getRouterStats'])->name('monitoring.stats');
     
             // Routers / Mikrotik
             Route::resource('routers', \App\Http\Controllers\Network\RouterController::class);

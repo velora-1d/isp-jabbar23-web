@@ -56,4 +56,13 @@ class Router extends Model
             default => '🖥️',
         };
     }
+    public function healthLogs()
+    {
+        return $this->hasMany(RouterHealthLog::class);
+    }
+
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
 }

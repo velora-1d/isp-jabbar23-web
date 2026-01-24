@@ -10,3 +10,8 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('billing:generate')
     ->monthlyOn(1, '01:00')
     ->description('Generate monthly invoices');
+
+\Illuminate\Support\Facades\Schedule::job(new \App\Jobs\CheckOverdueInvoicesJob)
+    ->dailyAt('02:00')
+    ->description('Suspend unpaid customers past grace period');
+
