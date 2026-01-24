@@ -3,7 +3,32 @@
 @section('content')
     <div class="space-y-6">
         <!-- Header -->
-        <!-- Header with Filters -->
+        <!-- Mode Tabs -->
+        <div class="flex items-center gap-2 mb-4">
+            <a href="{{ route('attendance.index', ['mode' => 'daily', 'date' => $date]) }}"
+                class="px-4 py-2 rounded-xl font-medium transition-all {{ $mode === 'daily' ? 'bg-emerald-600 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700' }}">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Harian
+            </a>
+            <a href="{{ route('attendance.index', ['mode' => 'range', 'date_from' => $dateFrom, 'date_to' => $dateTo]) }}"
+                class="px-4 py-2 rounded-xl font-medium transition-all {{ $mode === 'range' ? 'bg-emerald-600 text-white' : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700' }}">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Range Tanggal
+            </a>
+            <a href="{{ route('attendance.history') }}"
+                class="px-4 py-2 rounded-xl font-medium transition-all bg-gray-700/50 text-gray-400 hover:bg-gray-700">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Riwayat Bulanan
+            </a>
+        </div>
+
+        <!-- Filter Bar -->
         <x-filter-bar :filters="$filters ?? []">
             <x-slot name="global">
                 <x-filter-global :search-placeholder="'Cari Karyawan...'" />
@@ -11,9 +36,25 @@
 
             <x-slot name="filters">
                 <x-filter-select name="status" label="Status" :options="$statuses" :selected="request('status')" />
-                <input type="date" name="date" value="{{ $date }}"
-                    class="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-emerald-500"
-                    onchange="window.location.href='{{ route('attendance.index') }}?date=' + this.value">
+                
+                @if($mode === 'daily')
+                    <input type="date" name="date" value="{{ $date }}"
+                        class="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-emerald-500"
+                        onchange="window.location.href='{{ route('attendance.index') }}?mode=daily&date=' + this.value">
+                @else
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400 text-sm">Dari:</span>
+                        <input type="date" name="date_from" value="{{ $dateFrom }}" id="dateFrom"
+                            class="bg-gray-700/50 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                        <span class="text-gray-400 text-sm">s/d:</span>
+                        <input type="date" name="date_to" value="{{ $dateTo }}" id="dateTo"
+                            class="bg-gray-700/50 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                        <button type="button" onclick="applyDateRange()"
+                            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium">
+                            Terapkan
+                        </button>
+                    </div>
+                @endif
             </x-slot>
 
             <x-slot name="actions">
@@ -26,6 +67,14 @@
                 </a>
             </x-slot>
         </x-filter-bar>
+
+        <script>
+            function applyDateRange() {
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
+                window.location.href = '{{ route('attendance.index') }}?mode=range&date_from=' + dateFrom + '&date_to=' + dateTo;
+            }
+        </script>
 
         @if(session('success'))
             <div

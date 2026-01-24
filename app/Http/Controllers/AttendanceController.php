@@ -19,16 +19,21 @@ class AttendanceController extends Controller
 
     public function index(Request $request)
     {
+        $mode = $request->get('mode', 'daily'); // daily or range
         $date = $request->get('date', Carbon::today()->format('Y-m-d'));
+        $dateFrom = $request->get('date_from', Carbon::today()->subDays(7)->format('Y-m-d'));
+        $dateTo = $request->get('date_to', Carbon::today()->format('Y-m-d'));
         $month = $request->get('month', Carbon::today()->format('Y-m'));
 
         $query = Attendance::with('user');
 
-        // Apply date filter
-        if ($request->filled('date')) {
-            $query->whereDate('date', $date);
+        // Apply date filter based on mode
+        if ($mode === 'range' && $request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('date', [$dateFrom, $dateTo]);
+            $statsDate = null; // Don't show daily stats in range mode
         } else {
             $query->whereDate('date', $date);
+            $statsDate = $date;
         }
 
         // Apply status filter
@@ -37,14 +42,25 @@ class AttendanceController extends Controller
         // Apply employee filter
         $this->applyRelationFilter($query, $request, 'user_id');
 
-        $attendances = $query->orderBy('clock_in')->paginate(20)->withQueryString();
+        $attendances = $query->orderBy('date', 'desc')->orderBy('clock_in')->paginate(20)->withQueryString();
 
-        $stats = [
-            'total_employees' => User::where('is_active', true)->count(),
-            'present' => Attendance::whereDate('date', $date)->where('status', 'present')->count(),
-            'late' => Attendance::whereDate('date', $date)->where('status', 'late')->count(),
-            'absent' => Attendance::whereDate('date', $date)->where('status', 'absent')->count(),
-        ];
+        // Stats - only for daily mode
+        if ($statsDate) {
+            $stats = [
+                'total_employees' => User::where('is_active', true)->count(),
+                'present' => Attendance::whereDate('date', $statsDate)->where('status', 'present')->count(),
+                'late' => Attendance::whereDate('date', $statsDate)->where('status', 'late')->count(),
+                'absent' => Attendance::whereDate('date', $statsDate)->where('status', 'absent')->count(),
+            ];
+        } else {
+            // Range mode stats
+            $stats = [
+                'total_employees' => User::where('is_active', true)->count(),
+                'present' => Attendance::whereBetween('date', [$dateFrom, $dateTo])->where('status', 'present')->count(),
+                'late' => Attendance::whereBetween('date', [$dateFrom, $dateTo])->where('status', 'late')->count(),
+                'absent' => Attendance::whereBetween('date', [$dateFrom, $dateTo])->where('status', 'absent')->count(),
+            ];
+        }
 
         // Get employees for filter
         $employees = User::where('is_active', true)->orderBy('name')->get();
@@ -59,7 +75,52 @@ class AttendanceController extends Controller
             'holiday' => 'Holiday',
         ];
 
-        return view('hrd.attendance.index', compact('attendances', 'stats', 'date', 'month', 'employees', 'statuses'));
+        return view('hrd.attendance.index', compact('attendances', 'stats', 'date', 'dateFrom', 'dateTo', 'month', 'employees', 'statuses', 'mode'));
+    }
+
+    public function history(Request $request)
+    {
+        $month = $request->get('month', Carbon::today()->format('Y-m'));
+        $userId = $request->get('user_id');
+
+        $query = Attendance::with('user')
+            ->whereYear('date', Carbon::parse($month)->year)
+            ->whereMonth('date', Carbon::parse($month)->month);
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        // Apply status filter
+        $this->applyStatusFilter($query, $request);
+
+        $attendances = $query->orderBy('date', 'desc')->orderBy('user_id')->paginate(50)->withQueryString();
+
+        // Monthly stats
+        $stats = [
+            'total_days' => Carbon::parse($month)->daysInMonth,
+            'total_records' => Attendance::whereYear('date', Carbon::parse($month)->year)
+                ->whereMonth('date', Carbon::parse($month)->month)->count(),
+            'present' => Attendance::whereYear('date', Carbon::parse($month)->year)
+                ->whereMonth('date', Carbon::parse($month)->month)->where('status', 'present')->count(),
+            'late' => Attendance::whereYear('date', Carbon::parse($month)->year)
+                ->whereMonth('date', Carbon::parse($month)->month)->where('status', 'late')->count(),
+            'absent' => Attendance::whereYear('date', Carbon::parse($month)->year)
+                ->whereMonth('date', Carbon::parse($month)->month)->where('status', 'absent')->count(),
+        ];
+
+        $employees = User::where('is_active', true)->orderBy('name')->get();
+
+        $statuses = [
+            'present' => 'Present',
+            'late' => 'Late',
+            'absent' => 'Absent',
+            'sick' => 'Sick',
+            'leave' => 'Leave',
+            'holiday' => 'Holiday',
+        ];
+
+        return view('hrd.attendance.history', compact('attendances', 'stats', 'month', 'employees', 'statuses', 'userId'));
     }
 
     public function create()

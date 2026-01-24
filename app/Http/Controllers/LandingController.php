@@ -34,10 +34,10 @@ class LandingController extends Controller
 
         if ($query) {
             // Search ODPs by location name, district, or village
-            // Assuming ODP model has 'name', 'location_description', 'distict' etc.
-            // Adjust column names based on actual ODP table structure
-            $results = \App\Models\Network\Odp::where('name', 'like', "%{$query}%")
-                ->orWhere('location_description', 'like', "%{$query}%")
+            // Search ODPs by location name, address, or description
+            $results = \App\Models\Odp::where('name', 'like', "%{$query}%")
+                ->orWhere('address', 'like', "%{$query}%")
+                ->orWhere('description', 'like', "%{$query}%")
                 ->get();
         }
 

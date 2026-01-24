@@ -175,6 +175,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('attendance', \App\Http\Controllers\AttendanceController::class);
             Route::post('attendance/clock-in', [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clockIn');
             Route::post('attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clockOut');
+            Route::get('attendance-history', [\App\Http\Controllers\AttendanceController::class, 'history'])->name('attendance.history');
     
             // Payroll
             Route::resource('payroll', \App\Http\Controllers\PayrollController::class);
