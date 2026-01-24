@@ -21,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
   Map<String, dynamic>? _customerData;
   Map<String, dynamic>? _packageData;
+  Map<String, dynamic>? _technicianData;
 
   @override
   void initState() {
@@ -31,15 +32,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadAllData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _userName = prefs.getString('user_name') ?? 'Pelanggan';
+      _userName = prefs.getString('user_name') ?? 'Pengguna';
       _userEmail = prefs.getString('user_email') ?? '-';
       _userRole = prefs.getString('user_role') ?? 'customer';
     });
 
-    // Fetch detailed data only if customer
     if (_userRole == 'customer') {
       await _fetchCustomerData();
-    } else {}
+    } else if (_userRole == 'technician') {
+      await _fetchTechnicianData();
+    }
   }
 
   Future<void> _fetchCustomerData() async {
@@ -67,7 +69,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error fetching profile data: $e');
+      debugPrint('Error fetching customer data: $e');
+    }
+  }
+
+  Future<void> _fetchTechnicianData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) return;
+
+    try {
+      // Re-using dashboard endpoint as it returns user details
+      final response = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/technician/dashboard'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            _technicianData = data['user'];
+            // Update local fields if available
+            if (_technicianData != null) {
+              _userName = _technicianData!['name'];
+              _userEmail = _technicianData!['email'];
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching technician data: $e');
     }
   }
 
@@ -238,11 +274,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showTechnicianInfo() {
+    if (_technicianData == null) {
+      AppDialog.showError(context,
+          title: 'Data Belum Dimuat',
+          message: 'Mohon tunggu sebentar atau refresh halaman.');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Info Karyawan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              _buildInfoRow('Jabatan', _technicianData?['position'] ?? '-'),
+              _buildInfoRow(
+                  'Departemen', _technicianData?['department'] ?? '-'),
+              _buildInfoRow('Email', _technicianData?['email'] ?? '-'),
+              _buildInfoRow('Telepon', _technicianData?['phone'] ?? '-'),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showEditProfileDialog() {
+    // Only implemented for customer phone update currently
+    // Technician update reserved for Admin web
+    if (_userRole == 'technician') {
+      AppDialog.show(
+          context: context,
+          title: 'Info',
+          message:
+              'Perubahan data karyawan hanya dapat dilakukan oleh Admin/HRD.',
+          type: AppDialogType.info);
+      return;
+    }
+
     if (_customerData == null) return;
 
-    final phoneController = TextEditingController(
-        text: _customerData?['phone'] ?? ''); // Assuming 'phone' is in data
+    final phoneController =
+        TextEditingController(text: _customerData?['phone'] ?? '');
     bool isLoading = false;
 
     showDialog(
@@ -384,7 +510,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _userName ?? 'Pelanggan',
+                      _userName ?? 'Pengguna',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -409,6 +535,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontSize: 14,
                         ),
                       ),
+                    if (_userRole == 'technician' && _technicianData != null)
+                      Text(
+                        "${_technicianData!['position'] ?? ''} - ${_technicianData!['department'] ?? ''}",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -418,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        _userRole?.toUpperCase() ?? 'CUSTOMER',
+                        _userRole?.toUpperCase() ?? 'GUEST',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -437,6 +572,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
+                    // CUSTOMER SPECIFIC MENU
                     if (_userRole == 'customer') ...[
                       _buildMenuItem(
                         icon: Icons.location_on_outlined,
@@ -451,6 +587,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: _showPackageInfo,
                       ),
                     ],
+
+                    // TECHNICIAN SPECIFIC MENU
+                    if (_userRole == 'technician') ...[
+                      _buildMenuItem(
+                        icon: Icons.badge_outlined,
+                        title: 'Info Karyawan',
+                        subtitle: 'Lihat ID dan Jabatan',
+                        onTap: _showTechnicianInfo,
+                      ),
+                    ],
+
+                    // COMMON MENU
                     _buildMenuItem(
                       icon: Icons.lock_outline,
                       title: 'Ganti Password',

@@ -7,6 +7,7 @@ enum AppDialogType {
   success,
   maintenance,
   update,
+  info,
 }
 
 class AppDialog {
@@ -46,6 +47,11 @@ class AppDialog {
         break;
       case AppDialogType.update:
         icon = Icons.system_update_rounded;
+        iconColor = AppColors.primaryBlue;
+        buttonColor = AppColors.primaryBlue;
+        break;
+      case AppDialogType.info:
+        icon = Icons.info_outline_rounded;
         iconColor = AppColors.primaryBlue;
         buttonColor = AppColors.primaryBlue;
         break;
@@ -159,7 +165,8 @@ class AppDialog {
     return show(
       context: context,
       title: 'Koneksi Terputus',
-      message: 'Tidak dapat terhubung ke server.\nPeriksa koneksi internet Anda dan coba lagi.',
+      message:
+          'Tidak dapat terhubung ke server.\nPeriksa koneksi internet Anda dan coba lagi.',
       type: AppDialogType.error,
       buttonText: 'Coba Lagi',
     );
@@ -169,7 +176,8 @@ class AppDialog {
     return show(
       context: context,
       title: 'Sedang Maintenance',
-      message: 'Sistem sedang dalam perbaikan.\nMohon tunggu beberapa saat dan coba lagi nanti.',
+      message:
+          'Sistem sedang dalam perbaikan.\nMohon tunggu beberapa saat dan coba lagi nanti.',
       type: AppDialogType.maintenance,
       dismissible: false,
       buttonText: 'OK',
@@ -183,7 +191,8 @@ class AppDialog {
     return show(
       context: context,
       title: 'Update Tersedia',
-      message: 'Versi baru aplikasi sudah tersedia.\nSilakan update untuk pengalaman terbaik.',
+      message:
+          'Versi baru aplikasi sudah tersedia.\nSilakan update untuk pengalaman terbaik.',
       type: AppDialogType.update,
       dismissible: false,
       buttonText: 'Update Sekarang',
@@ -195,12 +204,14 @@ class AppDialog {
     return show(
       context: context,
       title: 'Data Tidak Ditemukan',
-      message: 'Data yang Anda cari tidak tersedia.\nSilakan coba lagi atau hubungi customer service.',
+      message:
+          'Data yang Anda cari tidak tersedia.\nSilakan coba lagi atau hubungi customer service.',
       type: AppDialogType.warning,
     );
   }
 
-  static Future<void> showComingSoon(BuildContext context, {String? featureName}) {
+  static Future<void> showComingSoon(BuildContext context,
+      {String? featureName}) {
     return show(
       context: context,
       title: 'Segera Hadir!',
