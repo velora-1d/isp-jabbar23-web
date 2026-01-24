@@ -21,13 +21,12 @@ class DummyDataSeeder extends Seeder
         ];
 
         foreach ($partners as $p) {
-            DB::table('partners')->insert([
+            DB::table('partners')->insertOrIgnore([
                 'name' => $p['name'],
                 'email' => $p['email'],
                 'phone' => $p['phone'],
                 'balance' => $p['balance'],
                 'commission_rate' => 10.0, // 10%
-                'password_hash' => Hash::make('rahasia123'),
                 'created_at' => Carbon::now(),
             ]);
         }
@@ -36,7 +35,7 @@ class DummyDataSeeder extends Seeder
         $statuses = ['ACTIVE', 'ACTIVE', 'ACTIVE', 'SUSPENDED', 'ACTIVE'];
         
         for ($i = 1; $i <= 10; $i++) {
-            DB::table('sync_mapping')->insert([
+            DB::table('sync_mapping')->insertOrIgnore([
                 'erp_customer_id' => 'CUST-2024-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'radius_username' => 'user_wifi_' . $i,
                 'inventory_device_sn' => 'ZTE' . rand(100000, 999999),

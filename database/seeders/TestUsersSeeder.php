@@ -20,7 +20,7 @@ class TestUsersSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $sales->syncRoles(['Sales & CS']);
+        $sales->syncRoles(['sales-cs']);
         $this->command->info('Created: sales@isp.com (password: password)');
 
         // Finance User
@@ -31,7 +31,7 @@ class TestUsersSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $finance->syncRoles(['Finance']);
+        $finance->syncRoles(['finance']);
         $this->command->info('Created: finance@isp.com (password: password)');
 
         // Technician User
@@ -42,7 +42,7 @@ class TestUsersSeeder extends Seeder
                 'password' => bcrypt('password'),
             ]
         );
-        $tech->syncRoles(['Teknisi Lapangan']);
+        $tech->syncRoles(['technician']);
         $this->command->info('Created: teknisi@isp.com (password: password)');
     }
 }
