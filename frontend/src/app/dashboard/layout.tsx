@@ -20,7 +20,9 @@ import {
     Network,
     Warehouse,
     ClipboardList,
-    Megaphone
+    Megaphone,
+    BookOpen,
+    ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -70,6 +72,8 @@ export default function DashboardLayout({
         { name: 'CRM & Leads', href: '/dashboard/admin/leads', icon: Users, admin: true },
         { name: 'Marketing & Promo', href: '/dashboard/admin/marketing', icon: Megaphone, admin: true },
         { name: 'Manajemen Tiket', href: '/dashboard/admin/tickets', icon: Ticket, admin: true },
+        { name: 'Knowledge Base', href: '/dashboard/admin/support/knowledge-base', icon: BookOpen, admin: true },
+        { name: 'SLA Management', href: '/dashboard/admin/support/sla', icon: ShieldCheck, admin: true },
         { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ];
 

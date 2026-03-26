@@ -100,6 +100,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Work Orders
         Route::patch('work-orders/{work_order}/status', [WorkOrderController::class, 'updateStatus']);
         Route::apiResource('work-orders', WorkOrderController::class);
+        Route::apiResource('knowledge-base', App\Http\Controllers\Api\Admin\KnowledgeBaseController::class);
+        Route::apiResource('sla', App\Http\Controllers\Api\Admin\SlaController::class);
 
         // Leads & CRM
         Route::patch('leads/{lead}/status', [LeadController::class, 'updateStatus']);

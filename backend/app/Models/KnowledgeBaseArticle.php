@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class KnowledgeBaseArticle extends Model
 {
+    use HasUuids, HasTenant;
+
     protected $fillable = [
+        'tenant_id',
         'title',
         'slug',
         'content',

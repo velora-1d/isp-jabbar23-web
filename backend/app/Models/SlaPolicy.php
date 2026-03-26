@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SlaPolicy extends Model
 {
+    use HasUuids, HasTenant;
+
     protected $fillable = [
+        'tenant_id',
         'name',
         'description',
         'priority',
