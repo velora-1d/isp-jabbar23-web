@@ -3,8 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\KnowledgeBaseController;
-use App\Http\Controllers\SlaController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReportController;
@@ -40,14 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Support & KB
     Route::middleware(['role:super_admin|admin|sales-cs|noc|technician'])->group(function () {
-        Route::resource('knowledge-base', KnowledgeBaseController::class);
         Route::resource('messages', MessageController::class)->except(['edit', 'update', 'destroy']);
     });
 
-    // SLA Management
-    Route::middleware(['role:super_admin|admin|noc'])->group(function () {
-        Route::resource('sla', SlaController::class)->except(['show']);
-    });
 
     // Accounting & Reports (Partial Keep)
     Route::middleware(['role:super_admin|admin|finance'])->group(function () {
