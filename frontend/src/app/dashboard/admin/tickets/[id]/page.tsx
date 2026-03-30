@@ -44,7 +44,12 @@ export default function TicketDetailPage() {
   const { data: ticketOptions } = useTickets(); // To get options like technicians
   const updateTicket = useUpdateTicket();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    status: string;
+    priority: string;
+    technician_id: string;
+    admin_notes: string;
+  }>({
     status: "",
     priority: "",
     technician_id: "",
@@ -205,7 +210,7 @@ export default function TicketDetailPage() {
             <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
                 <Label>Status Sistem</Label>
-                <Select value={form.status || ""} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v ?? "" })}>
                   <SelectTrigger className="border-slate-200 h-11">
                     <SelectValue placeholder="Pilih Status" />
                   </SelectTrigger>
@@ -220,7 +225,7 @@ export default function TicketDetailPage() {
 
               <div className="space-y-2">
                 <Label>Prioritas</Label>
-                <Select value={form.priority || ""} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v ?? "" })}>
                   <SelectTrigger className="border-slate-200 h-11">
                     <SelectValue placeholder="Pilih Prioritas" />
                   </SelectTrigger>
@@ -236,8 +241,8 @@ export default function TicketDetailPage() {
               <div className="space-y-2">
                 <Label>Teknisi Penanggung Jawab</Label>
                 <Select 
-                  value={form.technician_id || ""} 
-                  onValueChange={(v) => setForm({ ...form, technician_id: v })}
+                  value={form.technician_id} 
+                  onValueChange={(v) => setForm({ ...form, technician_id: v ?? "" })}
                 >
                   <SelectTrigger className="border-slate-200 h-11">
                     <SelectValue placeholder="Pilih Teknisi" />

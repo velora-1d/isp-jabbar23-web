@@ -5,50 +5,41 @@ import { useRouter } from 'next/navigation';
 import { CustomerForm } from '@/components/customers/customer-form';
 import { useCreateCustomer } from '@/hooks/use-customers';
 import { toast } from 'sonner';
-import { ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { DashboardPageShell } from '@/components/dashboard/page-shell';
+import { UserPlus } from 'lucide-react';
 
 export default function CreateCustomerPage() {
   const router = useRouter();
   const createCustomer = useCreateCustomer();
 
   const handleSubmit = async (data: any) => {
-    // Convert 'none' values back to null for API
+    // Normalisasi data untuk API
     const payload = { ...data };
     if (payload.assigned_to === 'none') payload.assigned_to = null;
     if (payload.olt_id === 'none') payload.olt_id = null;
 
-    await createCustomer.mutateAsync(payload, {
-      onSuccess: () => {
-        toast.success('Pelanggan berhasil didaftarkan!');
-        router.push('/dashboard/admin/customers');
-      },
-    });
+    try {
+      await createCustomer.mutateAsync(payload);
+      toast.success('Pelanggan berhasil didaftarkan!');
+      router.push('/dashboard/admin/customers');
+    } catch (error: any) {
+      // Error handling is managed in the form component generally, 
+      // but we catch it here just in case.
+    }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => router.back()}
-            className="rounded-full hover:bg-gray-800"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-400" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Daftar Pelanggan Baru</h1>
-            <p className="text-sm text-gray-400">Masukkan detail informasi pelanggan untuk aktivasi layanan.</p>
-          </div>
-        </div>
+    <DashboardPageShell
+      title="Registrasi Pelanggan"
+      description="Daftarkan pelanggan baru ke dalam sistem untuk aktivasi layanan internet."
+      icon={UserPlus}
+    >
+      <div className="max-w-5xl mx-auto">
+        <CustomerForm 
+          onSubmit={handleSubmit} 
+          isLoading={createCustomer.isPending} 
+        />
       </div>
-
-      <CustomerForm 
-        onSubmit={handleSubmit} 
-        isLoading={createCustomer.isPending} 
-      />
-    </div>
+    </DashboardPageShell>
   );
 }

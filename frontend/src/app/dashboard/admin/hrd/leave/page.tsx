@@ -28,6 +28,7 @@ import {
 import { 
   Dialog, 
   DialogContent, 
+  DialogDescription,
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
@@ -62,8 +63,8 @@ import { id } from "date-fns/locale";
 
 export default function LeavePage() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-  const [type, setType] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("all");
+  const [type, setType] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState<number | null>(null);
@@ -72,8 +73,8 @@ export default function LeavePage() {
   // Queries
   const { data: leavesData, isLoading } = useLeaves({ 
     search, 
-    status: status === "all" ? undefined : status || undefined,
-    type: type === "all" ? undefined : type || undefined
+    status: status === "all" ? undefined : status,
+    type: type === "all" ? undefined : type
   });
   const { data: employees } = useUsers();
   
@@ -156,7 +157,7 @@ export default function LeavePage() {
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label>Karyawan</Label>
-                    <Select value={formData.user_id} onValueChange={val => setFormData({...formData, user_id: val})}>
+                    <Select value={formData.user_id} onValueChange={val => setFormData({...formData, user_id: val ?? ""})}>
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih Karyawan" />
                         </SelectTrigger>
@@ -169,7 +170,7 @@ export default function LeavePage() {
                 </div>
                 <div className="grid gap-2">
                     <Label>Tipe Izin</Label>
-                    <Select value={formData.type} onValueChange={val => setFormData({...formData, type: val})}>
+                    <Select value={formData.type} onValueChange={val => setFormData({...formData, type: val ?? "annual"})}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
@@ -257,7 +258,7 @@ export default function LeavePage() {
             />
           </div>
           <div className="flex items-center gap-3">
-            <Select value={type || "all"} onValueChange={setType}>
+            <Select value={type} onValueChange={(v) => setType(v ?? "all")}>
                 <SelectTrigger className="w-[140px] h-9">
                     <SelectValue placeholder="Tipe Izin" />
                 </SelectTrigger>
@@ -268,7 +269,7 @@ export default function LeavePage() {
                     <SelectItem value="personal">Izin Pribadi</SelectItem>
                 </SelectContent>
             </Select>
-            <Select value={status || "all"} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
                 <SelectTrigger className="w-[140px] h-9">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>

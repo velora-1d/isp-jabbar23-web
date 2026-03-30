@@ -15,6 +15,7 @@ export interface Invoice {
   updated_at: string;
   customer?: {
     id: number;
+    customer_id: string;
     name: string;
     package?: {
       id: number;

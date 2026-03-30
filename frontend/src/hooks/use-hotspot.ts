@@ -37,7 +37,7 @@ export interface PaginatedVouchers {
   total: number;
 }
 
-export function useHotspotVouchers(params: { status?: string; router_id?: number; page?: number } = {}) {
+export function useHotspotVouchers(params: { status?: string; router_id?: number; page?: number; ids?: string[] } = {}) {
   return useQuery({
     queryKey: ["hotspot", "vouchers", params],
     queryFn: async () => {
@@ -95,3 +95,6 @@ export function useBulkDeleteVouchers() {
     },
   });
 }
+
+// Alias untuk kompatibilitas dengan print page
+export const useVouchers = useHotspotVouchers;

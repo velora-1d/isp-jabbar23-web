@@ -61,8 +61,8 @@ import { id } from "date-fns/locale";
 
 export default function CreditNotesPage() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-  const [reason, setReason] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("all");
+  const [reason, setReason] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
@@ -146,12 +146,12 @@ export default function CreditNotesPage() {
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label>Pilih Customer</Label>
-                    <Select value={formData.customer_id} onValueChange={val => setFormData({...formData, customer_id: val})}>
+                    <Select value={formData.customer_id} onValueChange={val => setFormData({...formData, customer_id: val ?? ""})}>
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih Pelanggan" />
                         </SelectTrigger>
                         <SelectContent>
-                            {customers?.data?.map((c: any) => (
+                            {customers?.customers?.data?.map((c: any) => (
                                 <SelectItem key={c.id} value={c.id.toString()}>{c.name} ({c.identifier})</SelectItem>
                             ))}
                         </SelectContent>
@@ -163,7 +163,7 @@ export default function CreditNotesPage() {
                 </div>
                 <div className="grid gap-2">
                     <Label>Alasan</Label>
-                    <Select value={formData.reason} onValueChange={val => setFormData({...formData, reason: val})}>
+                    <Select value={formData.reason} onValueChange={val => setFormData({...formData, reason: val ?? "overpayment"})}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
@@ -240,7 +240,7 @@ export default function CreditNotesPage() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <Select value={reason || "all"} onValueChange={val => setReason(val)}>
+            <Select value={reason} onValueChange={(v) => setReason(v ?? "all")}>
                 <SelectTrigger className="w-[150px] h-9 bg-white">
                     <SelectValue placeholder="Alasan" />
                 </SelectTrigger>
@@ -252,7 +252,7 @@ export default function CreditNotesPage() {
                     <SelectItem value="adjustment">Penyesuaian</SelectItem>
                 </SelectContent>
             </Select>
-            <Select value={status || "all"} onValueChange={val => setStatus(val)}>
+            <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
                 <SelectTrigger className="w-[150px] h-9 bg-white">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -360,7 +360,7 @@ export default function CreditNotesPage() {
                   <div className="grid gap-2">
                       <Label>Pilih Invoice Belum Lunas</Label>
                       {cnDetail?.unpaid_invoices.length > 0 ? (
-                          <Select value={targetInvoiceId} onValueChange={setTargetInvoiceId}>
+                          <Select value={targetInvoiceId} onValueChange={(v) => setTargetInvoiceId(v ?? "")}>
                               <SelectTrigger>
                                   <SelectValue placeholder="Pilih Nomor Invoice" />
                               </SelectTrigger>

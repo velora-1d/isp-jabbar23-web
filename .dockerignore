@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/vendor
+.git
+.gitignore
+**/pnpm-lock.yaml
+**/composer.lock
+**/*.log
+.env.local
+.env

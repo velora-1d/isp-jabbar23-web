@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Exclude Webhook from CSRF
-        $middleware->validateCsrfTokens(except: [
+        $middleware->preventRequestForgery(except: [
             'payment/webhook',
         ]);
 
@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'tenant' => \App\Http\Middleware\SetTenantContext::class,
         ]);
+
+        $middleware->statefulApi();
 
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\SetTenantContext::class,

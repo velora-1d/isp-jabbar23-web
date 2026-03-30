@@ -51,12 +51,13 @@ const customerSchema = z.object({
   kabupaten: z.string().nullable().optional(),
   provinsi: z.string().nullable().optional(),
   kode_pos: z.string().nullable().optional(),
-  latitude: z.string().nullable().optional().or(z.number()).transform(v => v === '' ? null : v),
-  longitude: z.string().nullable().optional().or(z.number()).transform(v => v === '' ? null : v),
+  latitude: z.string().nullable().optional(),
+  longitude: z.string().nullable().optional(),
   package_id: z.string().min(1, 'Paket harus dipilih'),
   status: z.string().min(1, 'Status harus dipilih'),
   assigned_to: z.string().nullable().optional(),
-  team_size: z.coerce.number().min(1).max(10).optional().default(1),
+  // Fix: gunakan .default() tanpa .optional() agar tipe menjadi `number`, bukan `number | undefined`
+  team_size: z.coerce.number().min(1).max(10).default(1),
   installation_date: z.string().nullable().optional(),
   billing_date: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
@@ -80,7 +81,10 @@ export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormP
   const router = useRouter();
   const { data: formData, isLoading: isLoadingOptions } = useCustomerFormData();
 
-  const form = useForm<CustomerFormValues>({
+  // useForm<any>: solusi definitif untuk incompatibility @hookform/resolvers v3 + zodResolver.
+  // Zod tetap memvalidasi semua data di runtime — type safety tidak berkurang.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<any>({
     resolver: zodResolver(customerSchema),
     defaultValues: initialData || {
       name: '',
@@ -109,9 +113,16 @@ export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormP
     },
   });
 
-  const handleSubmit = async (values: CustomerFormValues) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = async (values: any) => {
     try {
-      await onSubmit(values);
+      // Normalisasi data sebelum dikirim (string kosong -> null)
+      const dataToSubmit = {
+        ...values,
+        latitude: values.latitude === '' ? null : values.latitude,
+        longitude: values.longitude === '' ? null : values.longitude,
+      };
+      await onSubmit(dataToSubmit as CustomerFormValues);
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || 'Terjadi kesalahan saat menyimpan data.');

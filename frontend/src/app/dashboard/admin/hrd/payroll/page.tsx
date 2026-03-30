@@ -72,7 +72,7 @@ import { id } from "date-fns/locale";
 export default function PayrollPage() {
   const [period, setPeriod] = useState(format(new Date(), "yyyy-MM"));
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Queries
@@ -145,7 +145,7 @@ export default function PayrollPage() {
                     <div className="grid grid-cols-2 gap-4 py-4">
                         <div className="col-span-2 grid gap-2">
                             <Label>Karyawan</Label>
-                            <Select value={formData.user_id} onValueChange={val => setFormData({...formData, user_id: val})}>
+                            <Select value={formData.user_id} onValueChange={val => setFormData({...formData, user_id: val ?? ""}) /* fixed: force TSC */}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Pilih Karyawan" />
                                 </SelectTrigger>
@@ -245,7 +245,7 @@ export default function PayrollPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-             <Select value={status || "all"} onValueChange={val => setStatus(val)}>
+             <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
                 <SelectTrigger className="w-[140px] h-9">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>

@@ -169,7 +169,7 @@ export default function TicketsPage() {
             </div>
             <Select 
               value={filters.status || ""} 
-              onValueChange={(v) => setFilters({ ...filters, status: v })}
+              onValueChange={(v) => setFilters({ ...filters, status: v ?? "" })}
             >
               <SelectTrigger className="w-[140px] h-10 border-slate-200">
                 <Filter className="w-4 h-4 mr-2" />

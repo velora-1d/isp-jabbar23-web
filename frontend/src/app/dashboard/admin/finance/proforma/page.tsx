@@ -61,7 +61,7 @@ import { id } from "date-fns/locale";
 
 export default function ProformaPage() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -133,12 +133,12 @@ export default function ProformaPage() {
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label>Pilih Customer</Label>
-                    <Select value={formData.customer_id} onValueChange={val => setFormData({...formData, customer_id: val})}>
+                    <Select value={formData.customer_id} onValueChange={val => setFormData({...formData, customer_id: val ?? ""}) /* fixed: null-coalescing */}>
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih Pelanggan" />
                         </SelectTrigger>
                         <SelectContent>
-                            {customers?.data?.map((c: any) => (
+                            {customers?.customers?.data?.map((c: any) => (
                                 <SelectItem key={c.id} value={c.id.toString()}>{c.name} ({c.identifier})</SelectItem>
                             ))}
                         </SelectContent>
@@ -211,7 +211,7 @@ export default function ProformaPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Select value={status || "all"} onValueChange={val => setStatus(val)}>
+            <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
                 <SelectTrigger className="w-[150px] h-9">
                     <SelectValue placeholder="Filter Status" />
                 </SelectTrigger>

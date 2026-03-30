@@ -211,7 +211,7 @@ export default function InventoryPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Kategori</Label>
-                                <Select value={(itemForm.category_id ?? '') as string} onValueChange={val => setItemForm({...itemForm, category_id: val})}>
+                                <Select value={(itemForm.category_id ?? '') as string} onValueChange={val => setItemForm({...itemForm, category_id: val ?? ''})}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Kategori" />
                                     </SelectTrigger>
@@ -267,7 +267,7 @@ export default function InventoryPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Lokasi / Gudang</Label>
-                                    <Select value={(transactionForm.location_id ?? '') as string} onValueChange={val => setTransactionForm({...transactionForm, location_id: val})}>
+                                    <Select value={(transactionForm.location_id ?? '') as string} onValueChange={val => setTransactionForm({...transactionForm, location_id: val ?? ''})}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih Lokasi" />
                                         </SelectTrigger>

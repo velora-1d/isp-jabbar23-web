@@ -1,34 +1,32 @@
 "use client";
 
 import { useInvoice, useMarkAsPaid } from "@/hooks/use-invoices";
+import { Invoice } from "@/types/finance";
 import { useParams, useRouter } from "next/navigation";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle,
-  CardDescription
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, 
   User, 
   Calendar, 
   CreditCard, 
-  Info, 
   CheckCircle2, 
-  Save,
   Loader2,
   Download,
   Receipt,
-  AlertTriangle
+  AlertTriangle,
+  ExternalLink,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { useState } from "react";
+import { DashboardPageShell } from "@/components/dashboard/page-shell";
+import { cn } from "@/lib/utils";
 
 export default function BillingDetailPage() {
   const { id } = useParams() as { id: string };
@@ -43,13 +41,20 @@ export default function BillingDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-emerald-500" />
+          <p className="text-zinc-500 font-medium animate-pulse">Mengambil data transmisi invoice...</p>
+        </div>
       </div>
     );
   }
 
-  if (!invoice) return <div>Invoice tidak ditemukan.</div>;
+  if (!invoice) return (
+    <div className="p-8 text-center text-zinc-500 bg-red-500/5 border border-red-500/10 rounded-2xl">
+      Transmisi Data Terputus: Invoice tidak ditemukan.
+    </div>
+  );
 
   const handleConfirmPayment = () => {
     markAsPaid.mutate({
@@ -69,44 +74,31 @@ export default function BillingDetailPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
-        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Terbayar</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Terbayar</Badge>;
       case "unpaid":
         return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Belum Bayar</Badge>;
       case "overdue":
-        return <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20">Jatuh Tempo</Badge>;
+        return <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.1)]">Jatuh Tempo</Badge>;
       case "pending_approval":
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Menunggu Verifikasi</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 animate-pulse">Menunggu Verifikasi</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild className="rounded-full">
-            <Link href="/dashboard/admin/billing">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              Invoice #{invoice.invoice_number}
-              {getStatusBadge(invoice.status)}
-            </h1>
-            <p className="text-muted-foreground flex items-center gap-2">
-              Periode {invoice.period_start ? format(new Date(invoice.period_start as string), "MMMM yyyy", { locale: idLocale }) : "-"}
-            </p>
-          </div>
-        </div>
+    <DashboardPageShell
+      title={`Invoice #${invoice.invoice_number}`}
+      description={`Rincian tagihan layanan untuk periode ${invoice.period_start ? format(new Date(invoice.period_start as string), "MMMM yyyy", { locale: idLocale }) : "-"}`}
+      actions={
         <div className="flex items-center gap-2">
-           <Button variant="outline" className="border-slate-200">
-             <Download className="w-4 h-4 mr-2" /> PDF
+           <Button variant="outline" className="h-10 border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white">
+             <Download className="w-4 h-4 mr-2" />
+             Download PDF
            </Button>
            {invoice.status !== "paid" && (
              <Button 
-              className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white h-10 shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
               onClick={handleConfirmPayment}
               disabled={markAsPaid.isPending}
              >
@@ -115,149 +107,169 @@ export default function BillingDetailPage() {
             </Button>
            )}
         </div>
-      </div>
+      }
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Main Invoice Card */}
+          <div className="rounded-2xl border border-white/5 bg-zinc-900/10 overflow-hidden backdrop-blur-sm shadow-2xl relative">
+             <div className="p-8 space-y-8">
+                {/* Header Info */}
+                <div className="flex justify-between items-start">
+                   <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Status Tagihan</p>
+                      <div className="pt-1">{getStatusBadge(invoice.status)}</div>
+                   </div>
+                   <div className="text-right space-y-1">
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest underline decoration-emerald-500/30">Metode Verifikasi</p>
+                      <p className="text-xs font-medium text-zinc-400 mt-1 flex items-center justify-end gap-1.5">
+                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                         Auto-Match Billing
+                      </p>
+                   </div>
+                </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <Card className="border-none shadow-md overflow-hidden bg-white dark:bg-slate-950">
-            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-blue-500" />
-                Rincian Tagihan
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-               <div className="p-6 space-y-6">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                     <div className="space-y-1">
-                        <p className="text-muted-foreground">Tanggal Terbit</p>
-                        <p className="font-medium">{format(new Date(invoice.created_at), "dd MMM yyyy", { locale: idLocale })}</p>
-                     </div>
-                     <div className="space-y-1 text-right">
-                        <p className="text-muted-foreground">Batas Pembayaran</p>
-                        <p className="font-medium text-red-500">{format(new Date(invoice.due_date), "dd MMM yyyy", { locale: idLocale })}</p>
-                     </div>
+                {/* Table Breakdown */}
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] overflow-hidden">
+                   <table className="w-full text-sm">
+                      <thead className="bg-white/[0.03]">
+                         <tr>
+                            <th className="px-6 py-4 text-left font-bold text-zinc-400 uppercase tracking-tighter text-[10px]">Deskripsi Layanan</th>
+                            <th className="px-6 py-4 text-right font-bold text-zinc-400 uppercase tracking-tighter text-[10px]">Jumlah (IDR)</th>
+                         </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                         <tr className="hover:bg-white/[0.01] transition-colors">
+                            <td className="px-6 py-6 flex items-start gap-3">
+                               <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 mt-0.5">
+                                  <Zap className="w-4 h-4" />
+                               </div>
+                               <div>
+                                  <p className="font-semibold text-white">Layanan Internet Broadband</p>
+                                  <p className="text-xs text-zinc-500 mt-1">Bulan {invoice.period_start ? format(new Date(invoice.period_start as string), "MMMM yyyy", { locale: idLocale }) : "-"}</p>
+                               </div>
+                            </td>
+                            <td className="px-6 py-6 text-right font-bold text-white font-heading">
+                               {formatCurrency(invoice.amount)}
+                            </td>
+                         </tr>
+                      </tbody>
+                      <tfoot className="bg-emerald-500/5 font-medium border-t border-white/5">
+                         <tr>
+                            <td className="px-6 py-4 text-right text-zinc-400">Pajak Pertambahan Nilai (PPN 11%)</td>
+                            <td className="px-6 py-4 text-right text-zinc-300 font-bold">{formatCurrency(invoice.tax_amount)}</td>
+                         </tr>
+                         <tr className="text-xl font-bold bg-emerald-500/10">
+                            <td className="px-6 py-5 text-right text-white">TOTAL PEMBAYARAN</td>
+                            <td className="px-6 py-5 text-right text-emerald-400 font-heading tracking-tight">{formatCurrency(invoice.total_after_tax)}</td>
+                         </tr>
+                      </tfoot>
+                   </table>
+                </div>
+
+                {/* Dates Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl border border-white/5 bg-zinc-900/40">
+                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Diterbitkan</p>
+                    <p className="text-sm font-semibold text-white">{format(new Date(invoice.created_at), "dd MMMM yyyy", { locale: idLocale })}</p>
                   </div>
-
-                  <div className="border rounded-lg overflow-hidden">
-                     <table className="w-full text-sm">
-                        <thead className="bg-slate-50 dark:bg-slate-900">
-                           <tr>
-                              <th className="px-4 py-3 text-left font-semibold">Deskripsi Layanan</th>
-                              <th className="px-4 py-3 text-right font-semibold">Jumlah</th>
-                           </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                           <tr>
-                              <td className="px-4 py-4">
-                                 Layanan Internet - Bulan {invoice.period_start ? format(new Date(invoice.period_start as string), "MMMM yyyy", { locale: idLocale }) : "-"}
-                              </td>
-                              <td className="px-4 py-4 text-right">
-                                 {formatCurrency(invoice.amount)}
-                              </td>
-                           </tr>
-                        </tbody>
-                        <tfoot className="bg-slate-50/50 dark:bg-slate-900/50 font-medium">
-                           <tr>
-                              <td className="px-4 py-3 text-right text-muted-foreground">PPN (11%)</td>
-                              <td className="px-4 py-3 text-right">{formatCurrency(invoice.tax_amount)}</td>
-                           </tr>
-                           <tr className="text-lg font-bold text-blue-600">
-                              <td className="px-4 py-4 text-right">Total Bayar</td>
-                              <td className="px-4 py-4 text-right">{formatCurrency(invoice.total_after_tax)}</td>
-                           </tr>
-                        </tfoot>
-                     </table>
+                  <div className="p-4 rounded-xl border border-red-500/5 bg-red-500/5">
+                    <p className="text-[10px] font-bold text-red-500/50 uppercase tracking-widest mb-1">Batas Waktu</p>
+                    <p className="text-sm font-semibold text-red-400">{format(new Date(invoice.due_date), "dd MMMM yyyy", { locale: idLocale })}</p>
                   </div>
-               </div>
-            </CardContent>
-          </Card>
+                </div>
+             </div>
 
+             {/* Bottom Decoration */}
+             <div className="h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 w-full" />
+          </div>
+
+          {/* Payment Status Message */}
           {invoice.status === "paid" && (
-            <Card className="border-green-100 shadow-sm bg-green-50/30">
-               <CardContent className="p-6 flex items-center gap-4">
-                  <div className="p-2 bg-green-100 rounded-full text-green-600">
-                     <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                     <p className="font-bold text-green-800">Pembayaran Terverifikasi</p>
-                     <p className="text-sm text-green-700">
-                        Invoice ini telah dibayar pada {format(new Date(invoice.payment_date!), "dd MMMM yyyy", { locale: idLocale })} melalui {invoice.payment_method}.
-                     </p>
-                  </div>
-               </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 flex items-center gap-4 animate-in fade-in zoom-in duration-500">
+               <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                  <CheckCircle2 className="w-6 h-6 shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
+               </div>
+               <div>
+                  <p className="font-bold text-white uppercase tracking-tight">Pembayaran Terverifikasi</p>
+                  <p className="text-sm text-zinc-400">
+                     Sistem telah memproses pelunasan pada <span className="text-emerald-400 font-semibold">{format(new Date(invoice.payment_date!), "dd MMMM yyyy", { locale: idLocale })}</span> melalui {invoice.payment_method}.
+                  </p>
+               </div>
+            </div>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="flex flex-col gap-6">
-          <Card className="border-none shadow-md overflow-hidden bg-white dark:bg-slate-950">
-            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-500" />
-                Informasi Pelanggan
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
+        {/* Sidebar Actions */}
+        <div className="space-y-6">
+          {/* Customer Context Card */}
+          <div className="rounded-2xl border border-white/5 bg-zinc-900/50 backdrop-blur-md p-6 space-y-6 relative overflow-hidden group">
+             <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Konteks Pelanggan</h4>
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+             </div>
+             
+             <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-zinc-800 border border-white/5 flex items-center justify-center text-emerald-500 font-bold text-xl font-heading group-hover:border-emerald-500/30 transition-colors">
                   {invoice.customer?.name?.[0]}
                 </div>
-                <div className="flex flex-col">
-                   <p className="font-bold">{invoice.customer?.name}</p>
-                   <p className="text-xs text-muted-foreground font-mono">{invoice.customer?.customer_id}</p>
+                <div className="flex-1 min-w-0">
+                   <p className="font-bold text-white truncate">{invoice.customer?.name}</p>
+                   <p className="text-xs text-zinc-500 font-mono tracking-tighter uppercase">{invoice.customer?.customer_id}</p>
                 </div>
-              </div>
-              <Button variant="outline" className="w-full border-slate-200" asChild>
-                <Link href={`/dashboard/admin/customers/${invoice.customer_id}`}>
-                   Detail Pelanggan
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+             </div>
 
+             <Button variant="outline" className="w-full h-11 border-white/5 bg-white/[0.03] text-zinc-400 hover:text-white rounded-xl group-hover:border-emerald-500/20 transition-all font-semibold" asChild>
+                <Link href={`/dashboard/admin/customers/${invoice.customer_id}`}>
+                   Profil Pelanggan
+                   <ExternalLink className="w-3.5 h-3.5 ml-2 opacity-50" />
+                </Link>
+             </Button>
+          </div>
+
+          {/* Payment Execution Card */}
           {invoice.status !== "paid" && (
-            <Card className="border-none shadow-md overflow-hidden bg-white dark:bg-slate-950">
-               <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-                  <CardTitle className="text-lg font-bold flex items-center gap-2">
-                     <CreditCard className="w-5 h-5 text-blue-500" />
-                     Data Pembayaran
-                  </CardTitle>
-               </CardHeader>
-               <CardContent className="p-6 space-y-4">
+            <div className="rounded-2xl border border-white/5 bg-zinc-900/50 backdrop-blur-md p-6 space-y-6">
+               <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  Terminal Pembayaran
+               </h4>
+
+               <div className="space-y-4">
                   <div className="space-y-2">
-                     <Label>Metode Pembayaran</Label>
+                     <Label className="text-[10px] font-bold text-zinc-400 uppercase px-1">Metode Capture</Label>
                      <select 
-                        className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white dark:bg-slate-900"
+                        className="w-full h-11 px-4 rounded-xl border border-white/5 bg-zinc-950 text-sm text-zinc-300 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer"
                         value={paymentForm.payment_method}
                         onChange={(e) => setPaymentForm({...paymentForm, payment_method: e.target.value})}
                      >
                         <option value="manual_transfer">Transfer Manual (BCA/Mandiri)</option>
                         <option value="cash">Tunai (Kantor)</option>
-                        <option value="other">Lainnya</option>
+                        <option value="other">Penyesuaian Manual</option>
                      </select>
                   </div>
                   <div className="space-y-2">
-                     <Label>Tanggal Bayar</Label>
+                     <Label className="text-[10px] font-bold text-zinc-400 uppercase px-1">Waktu Transaksi</Label>
                      <Input 
                         type="date" 
                         value={paymentForm.payment_date}
-                        onChange={(e) => setPaymentForm({...paymentForm, payment_date: e.target.value})}
+                        className="h-11 border-white/5 bg-zinc-950 rounded-xl focus:ring-emerald-500/50"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPaymentForm({...paymentForm, payment_date: e.target.value})}
                      />
                   </div>
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 flex gap-2">
-                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                     <p className="text-[10px] text-amber-700">
-                        Pastikan Anda telah menerima bukti pembayaran yang sah sebelum melakukan konfirmasi lunas.
-                     </p>
-                  </div>
-               </CardContent>
-            </Card>
+               </div>
+
+               <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 flex gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-amber-200/60 leading-relaxed font-medium">
+                     TINDAKAN MANUAL: Pastikan Anda telah melihat fisik bukti bayar sebelum mengeksekusi konfirmasi lunas pada sistem pusat JABBAR23.
+                  </p>
+               </div>
+            </div>
           )}
         </div>
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

@@ -11,10 +11,10 @@ import { useEffect } from "react";
 export default function VoucherPrintPage() {
   const searchParams = useSearchParams();
   const ids = searchParams.get("ids")?.split(",") || [];
-  const { data: vouchersData, isLoading } = useVouchers({ ids });
+  const { data: vouchersData, isLoading } = useVouchers({ ids }) /* fixed: force re-scan */;
 
   useEffect(() => {
-    if (!isLoading && vouchersData?.vouchers.data.length) {
+    if (!isLoading && vouchersData?.data.length) {
        // Auto trigger print if needed? Maybe better manual
     }
   }, [isLoading, vouchersData]);
@@ -32,7 +32,7 @@ export default function VoucherPrintPage() {
             </Button>
             <div>
                 <h1 className="text-lg font-bold tracking-tight">Voucher Print Preview</h1>
-                <p className="text-xs text-muted-foreground">Total {vouchersData?.vouchers.data.length} voucher siap cetak.</p>
+                <p className="text-xs text-muted-foreground">Total {vouchersData?.data.length} voucher siap cetak.</p>
             </div>
         </div>
         <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 shadow-lg">
@@ -43,7 +43,7 @@ export default function VoucherPrintPage() {
 
       <div className="print-grid max-w-[210mm] mx-auto bg-white p-[10mm] shadow-lg print:shadow-none print:p-0">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {vouchersData?.vouchers.data.map((v: any) => (
+          {vouchersData?.data.map((v: any) => (
             <div key={v.id} className="border-2 border-dashed border-slate-200 p-4 rounded-lg relative overflow-hidden h-[45mm] flex flex-col justify-between print:border-slate-800">
                <div className="flex items-center justify-between border-b pb-2 mb-2">
                  <span className="text-[10px] font-black italic text-slate-400">JABBAR23<span className="text-blue-500">HOTSPOT</span></span>

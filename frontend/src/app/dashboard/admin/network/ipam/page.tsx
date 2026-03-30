@@ -65,7 +65,7 @@ import {
 
 export default function IpamPage() {
   const [search, setSearch] = useState("");
-  const [type, setType] = useState<string | null>(null);
+  const [type, setType] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [selectedPool, setSelectedPool] = useState<IpPool | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -145,7 +145,7 @@ export default function IpamPage() {
                 </div>
                 <div className="grid gap-2">
                     <Label>Tipe Jaringan</Label>
-                    <Select value={newPool.type} onValueChange={val => setNewPool({...newPool, type: val})}>
+                    <Select value={newPool.type} onValueChange={val => setNewPool({...newPool, type: val ?? "private"})}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
@@ -209,7 +209,7 @@ export default function IpamPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Select value={type || "all"} onValueChange={val => setType(val)}>
+            <Select value={type} onValueChange={(v) => setType(v ?? "all")}>
                 <SelectTrigger className="w-[150px] h-9">
                     <SelectValue placeholder="Filter Tipe" />
                 </SelectTrigger>

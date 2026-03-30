@@ -381,6 +381,7 @@ class RoleSeeder extends Seeder
             ['email' => 'tech@isp.local', 'name' => 'Field Technician', 'role' => 'technician'],
             ['email' => 'warehouse@isp.local', 'name' => 'Warehouse Staff', 'role' => 'warehouse'],
             ['email' => 'hrd@isp.local', 'name' => 'HRD Manager', 'role' => 'hrd'],
+            ['email' => 'reseller@isp.local', 'name' => 'Reseller Partner', 'role' => 'reseller'],
         ];
 
         foreach ($demoUsers as $userData) {

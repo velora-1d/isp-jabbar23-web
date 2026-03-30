@@ -15,7 +15,8 @@ export const useAuth = () => {
     queryFn: async () => {
       try {
         const response = await axios.get('/api/me');
-        return response.data;
+        const { user, role } = response.data;
+        return { ...user, role };
       } catch (err) {
         return null;
       }

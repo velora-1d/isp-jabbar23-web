@@ -30,6 +30,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+});
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected Routes
