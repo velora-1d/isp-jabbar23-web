@@ -55,10 +55,11 @@ class AnalyticsService
         $monthlyRevenue = Invoice::whereYear('period_start', $year)
             ->where('status', 'paid')
             ->select(
+                DB::raw("TO_CHAR(period_start, 'Mon') as month_name"),
                 DB::raw('EXTRACT(MONTH FROM period_start) as month'),
                 DB::raw('SUM(total_after_tax) as total')
             )
-            ->groupBy('month')
+            ->groupBy('month_name', 'month')
             ->orderBy('month')
             ->get();
 
