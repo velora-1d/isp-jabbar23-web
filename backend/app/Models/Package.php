@@ -25,6 +25,7 @@ class Package extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'speed_down',
         'speed_up',

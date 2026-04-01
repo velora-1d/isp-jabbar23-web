@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Router extends Model
 {
     protected $fillable = [
+        'tenant_id',
         'name',
         'ip_address',
         'port',

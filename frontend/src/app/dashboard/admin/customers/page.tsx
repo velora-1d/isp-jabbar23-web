@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useCustomers, useUpdateCustomerStatus } from '@/hooks/use-customers';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -13,12 +13,6 @@ import {
     TableRow 
 } from '@/components/ui/table';
 import { 
-    Card, 
-    CardContent, 
-    CardHeader, 
-    CardTitle 
-} from '@/components/ui/card';
-import { 
     Select, 
     SelectContent, 
     SelectItem, 
@@ -28,75 +22,43 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle,
-    DialogFooter,
-    DialogDescription
-} from '@/components/ui/dialog';
-import { 
     Search, 
-    Filter, 
     Plus, 
     Users, 
     CheckCircle2, 
-    Clock, 
     AlertCircle,
     Eye,
     Edit2,
     Loader2,
     ChevronLeft,
     ChevronRight,
-    ArrowUpRight,
     Globe,
-    Zap,
-    MapPin
+    MapPin,
+    Clock,
+    Filter
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { DashboardPageShell } from '@/components/dashboard/page-shell';
 
-// StatCard Component for consistent look
-function StatCard({ label, value, icon: Icon, color = "emerald", description }: any) {
-    const colorMap = {
-        emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-400 border-emerald-500/20",
-        blue: "from-blue-500/20 to-blue-500/5 text-blue-400 border-blue-500/20",
-        amber: "from-amber-500/20 to-amber-500/5 text-amber-400 border-amber-500/20",
-        red: "from-red-500/20 to-red-500/5 text-red-400 border-red-500/20",
-    } as any;
-
-    const glowMap = {
-        emerald: "bg-emerald-500/10",
-        blue: "bg-blue-500/10",
-        amber: "bg-amber-500/10",
-        red: "bg-red-500/10",
-    } as any;
-
+// StatCard Component matching Screenshot 02 style
+function StatCard({ label, value, icon: Icon, colorClass, borderClass, bgClass, iconBgClass }: any) {
     return (
-        <div className={cn(
-            "relative group overflow-hidden rounded-2xl border bg-gradient-to-br p-px transition-all duration-300 hover:shadow-2xl hover:shadow-black/50",
-            colorMap[color]
-        )}>
-            <div className="relative h-full w-full rounded-[15px] bg-zinc-950/80 p-5 backdrop-blur-xl transition-all group-hover:bg-zinc-950/40">
-                <div className={cn("absolute -right-6 -top-6 h-24 w-24 rounded-full blur-3xl transition-opacity group-hover:opacity-100 opacity-20", glowMap[color])} />
-                
-                <div className="flex items-center justify-between mb-3">
-                    <div className={cn("p-2 rounded-lg bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-500")}>
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    {description && (
-                         <div className="flex items-center gap-1 text-[10px] uppercase tracking-tighter opacity-70">
-                            <ArrowUpRight className="h-3 w-3" />
-                            {description}
-                         </div>
-                    )}
-                </div>
-
+        <div className={cn("relative overflow-hidden rounded-2xl border p-6 backdrop-blur-xl transition-all duration-300 hover:shadow-2xl", borderClass, bgClass)}>
+            <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <p className="text-sm font-medium text-zinc-400 group-hover:text-zinc-300 transition-colors">{label}</p>
-                    <h3 className="text-2xl font-bold tracking-tight text-white font-heading">{value}</h3>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{label}</p>
+                    <h3 className="text-3xl font-black text-white font-heading">{value}</h3>
                 </div>
+                <div className={cn("p-3 rounded-2xl", iconBgClass)}>
+                    <Icon className={cn("h-6 w-6", colorClass)} />
+                </div>
+            </div>
+            {/* Subtle progress indicator or trend could go here if in screenshot */}
+            <div className="mt-4 flex items-center space-x-2">
+                <div className="h-1 flex-1 bg-slate-800 rounded-full overflow-hidden">
+                    <div className={cn("h-full w-2/3 rounded-full", colorClass.replace('text', 'bg'))} />
+                </div>
+                <span className="text-[10px] text-slate-500 font-bold">65%</span>
             </div>
         </div>
     );
@@ -112,121 +74,94 @@ export default function AdminCustomersPage() {
     });
 
     const { data, isLoading } = useCustomers(filters);
-    const updateStatusMutation = useUpdateCustomerStatus();
-    
-    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-    const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-    const [newStatus, setNewStatus] = useState('');
-    const [statusNotes, setStatusNotes] = useState('');
 
-    const handleUpdateStatus = () => {
-        if (!selectedCustomer || !newStatus) return;
-
-        updateStatusMutation.mutate({
-            id: selectedCustomer.id,
-            status: newStatus,
-            notes: statusNotes
-        }, {
-            onSuccess: () => {
-                toast.success('Status pelanggan berhasil diperbarui');
-                setStatusDialogOpen(false);
-                setSelectedCustomer(null);
-                setNewStatus('');
-                setStatusNotes('');
-            },
-            onError: () => {
-                toast.error('Gagal memperbarui status');
-            }
-        });
-    };
-
-    const getStatusColor = (status: string) => {
+    const getStatusBadge = (status: string, label: string) => {
         switch (status) {
-            case 'active': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-            case 'registered': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-            case 'survey': return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
-            case 'approved': return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
-            case 'scheduled': return 'bg-teal-500/10 text-teal-400 border-teal-500/20';
-            case 'installing': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-            case 'suspended': return 'bg-red-500/10 text-red-400 border-red-500/20';
-            case 'terminated': return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
-            default: return 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
+            case 'active': 
+                return <Badge className="bg-emerald-500/10 text-emerald-400 border-none rounded-lg px-2 text-[10px] font-bold uppercase tracking-widest">● {label}</Badge>;
+            case 'suspended': 
+                return <Badge className="bg-red-500/10 text-red-400 border-none rounded-lg px-2 text-[10px] font-bold uppercase tracking-widest">● {label}</Badge>;
+            case 'registered': 
+                return <Badge className="bg-blue-500/10 text-blue-400 border-none rounded-lg px-2 text-[10px] font-bold uppercase tracking-widest">● {label}</Badge>;
+            default: 
+                return <Badge className="bg-slate-500/10 text-slate-400 border-none rounded-lg px-2 text-[10px] font-bold uppercase tracking-widest">● {label}</Badge>;
         }
     };
 
     const actions = (
         <Link href="/dashboard/admin/customers/create">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-5 shadow-lg shadow-emerald-600/20 gap-2 border border-emerald-500/50">
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl h-12 px-6 shadow-xl shadow-emerald-500/20 gap-2 font-bold uppercase tracking-widest text-[11px]">
                 <Plus className="h-4 w-4" />
-                <span className="font-semibold text-sm">Pelanggan Baru</span>
+                Tambah Pelanggan
             </Button>
         </Link>
     );
 
     return (
         <DashboardPageShell
-            title="Manajemen Pelanggan"
-            description="Katalog data pelanggan, status layanan, dan manajemen paket internet JABBAR23."
+            title="Database Pelanggan"
+            description="Manajemen data pelanggan, monitoring status layanan, dan penagihan billing."
             actions={actions}
         >
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Summary Statistics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard 
                     label="Total Pelanggan" 
                     value={data?.stats?.total || 0} 
                     icon={Users} 
-                    color="blue" 
-                    description="SEMUA BASIS DATA"
+                    bgClass="bg-slate-900/40" 
+                    borderClass="border-slate-800"
+                    colorClass="text-blue-400"
+                    iconBgClass="bg-blue-500/10"
                 />
                 <StatCard 
-                    label="Aktif / Online" 
+                    label="Pelanggan Aktif" 
                     value={data?.stats?.active || 0} 
                     icon={CheckCircle2} 
-                    color="emerald" 
-                    description="LAYANAN AKTIF"
+                    bgClass="bg-slate-900/40" 
+                    borderClass="border-slate-800"
+                    colorClass="text-emerald-400"
+                    iconBgClass="bg-emerald-500/10"
                 />
                 <StatCard 
-                    label="Proses Aktivasi" 
-                    value={data?.stats?.pending || 0} 
-                    icon={Clock} 
-                    color="amber" 
-                    description="ANTRIAN SURVEY"
-                />
-                <StatCard 
-                    label="Isolir / Suspended" 
+                    label="Pelanggan Suspend" 
                     value={data?.stats?.suspended || 0} 
                     icon={AlertCircle} 
-                    color="red" 
-                    description="TUNGGAKAN"
+                    bgClass="bg-slate-900/40" 
+                    borderClass="border-slate-800"
+                    colorClass="text-red-400"
+                    iconBgClass="bg-red-500/10"
+                />
+                <StatCard 
+                    label="Menunggu Registrasi" 
+                    value={data?.stats?.pending || 0} 
+                    icon={Clock} 
+                    bgClass="bg-slate-900/40" 
+                    borderClass="border-slate-800"
+                    colorClass="text-amber-400"
+                    iconBgClass="bg-amber-500/10"
                 />
             </div>
 
-            {/* Filter Hub */}
-            <div className="mb-6 flex flex-col md:flex-row gap-4">
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col xl:flex-row gap-4 mb-8 bg-slate-900/40 border border-slate-800 p-4 rounded-2xl backdrop-blur-xl">
                 <div className="relative flex-1 group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-zinc-500 group-focus-within:text-emerald-400 transition-colors" />
-                    </div>
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                     <Input 
-                        placeholder="Cari Nama, CID, atau No. Telepon..." 
-                        className="pl-10 h-11 bg-zinc-950/50 border-white/5 rounded-xl focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all backdrop-blur-md"
+                        placeholder="Cari nama, CID, atau nomor telepon..." 
+                        className="bg-slate-950/50 border-slate-800 pl-12 h-12 rounded-xl text-sm focus:border-emerald-500/50 focus:ring-emerald-500/10 transition-all placeholder:text-slate-600"
                         value={filters.search}
                         onChange={(e) => setFilters({...filters, search: e.target.value, page: 1})}
                     />
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-3">
-                    <Select 
-                        value={filters.status} 
-                        onValueChange={(val) => setFilters({...filters, status: val ?? 'all', page: 1})}
-                    >
-                        <SelectTrigger className="w-[150px] h-11 bg-zinc-950/50 border-white/5 rounded-xl text-zinc-300">
-                            <div className="flex items-center gap-2">
-                                <Filter className="h-3.5 w-3.5 text-emerald-500" />
-                                <SelectValue placeholder="Status" />
-                            </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                    <Select value={filters.status} onValueChange={(val) => setFilters({...filters, status: val || 'all', page: 1})}>
+                        <SelectTrigger className="h-12 bg-slate-950/50 border-slate-800 rounded-xl text-slate-300 w-full min-w-[140px]">
+                            <Filter className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                            <SelectValue placeholder="Status" />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                        <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
                             <SelectItem value="all">Semua Status</SelectItem>
                             {data?.options.statuses && Object.entries(data.options.statuses).map(([key, label]) => (
                                 <SelectItem key={key} value={key}>{label as string}</SelectItem>
@@ -234,134 +169,101 @@ export default function AdminCustomersPage() {
                         </SelectContent>
                     </Select>
 
-                    <Select 
-                        value={filters.package_id} 
-                        onValueChange={(val) => setFilters({...filters, package_id: val ?? 'all', page: 1})}
-                    >
-                        <SelectTrigger className="w-[180px] h-11 bg-zinc-950/50 border-white/5 rounded-xl text-zinc-300">
-                            <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4 text-emerald-500" />
-                                <SelectValue placeholder="Paket" />
-                            </div>
+                    <Select value={filters.kelurahan} onValueChange={(val) => setFilters({...filters, kelurahan: val || 'all', page: 1})}>
+                        <SelectTrigger className="h-12 bg-slate-950/50 border-slate-800 rounded-xl text-slate-300 w-full min-w-[140px]">
+                            <MapPin className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                            <SelectValue placeholder="Wilayah" />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                        <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
+                            <SelectItem value="all">Semua Wilayah</SelectItem>
+                            {data?.options.locations.kelurahan.map((loc: string) => (
+                                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={filters.package_id} onValueChange={(val) => setFilters({...filters, package_id: val || 'all', page: 1})}>
+                        <SelectTrigger className="h-12 bg-slate-950/50 border-slate-800 rounded-xl text-slate-300 w-full min-w-[140px] hidden lg:flex">
+                            <Globe className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                            <SelectValue placeholder="Paket" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
                             <SelectItem value="all">Semua Paket</SelectItem>
                             {data?.options.packages.map((pkg: any) => (
                                 <SelectItem key={pkg.id} value={pkg.id.toString()}>{pkg.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-
-                    <Select 
-                        value={filters.kelurahan} 
-                        onValueChange={(val) => setFilters({...filters, kelurahan: val ?? 'all', page: 1})}
-                    >
-                        <SelectTrigger className="w-[150px] h-11 bg-zinc-950/50 border-white/5 rounded-xl text-zinc-300">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-emerald-500" />
-                                <SelectValue placeholder="Wilayah" />
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                            <SelectItem value="all">Semua Desa</SelectItem>
-                            {data?.options.locations.kelurahan.map((loc: string) => (
-                                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
                 </div>
             </div>
 
-            {/* Table Area */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-950/30 backdrop-blur-xl">
+            {/* Table Section */}
+            <div className="relative bg-slate-900/20 border border-slate-800/60 rounded-3xl overflow-hidden backdrop-blur-sm shadow-2xl">
                 {isLoading && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-20 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <Loader2 className="h-10 w-10 text-emerald-500 animate-spin" />
-                            <p className="text-zinc-400 animate-pulse text-sm">Menarik data dari server Emerald...</p>
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-md z-10 flex items-center justify-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+                            <p className="text-slate-400 font-bold text-sm animate-pulse tracking-widest uppercase">Sinkronisasi Database...</p>
                         </div>
                     </div>
                 )}
 
                 <Table>
-                    <TableHeader className="bg-white/[0.02] border-b border-white/5">
-                        <TableRow className="border-white/5 hover:bg-transparent uppercase tracking-widest text-[10px] font-bold text-zinc-500">
-                            <TableHead className="px-6 py-4">Informasi Pelanggan</TableHead>
-                            <TableHead>CID</TableHead>
-                            <TableHead>Layanan</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Terdaftar</TableHead>
-                            <TableHead className="text-right px-6">Navigasi</TableHead>
+                    <TableHeader className="bg-slate-800/30">
+                        <TableRow className="border-slate-800 hover:bg-transparent">
+                            <TableHead className="w-12 px-4 py-5 text-center text-slate-500 font-bold uppercase tracking-widest text-[10px]">#</TableHead>
+                            <TableHead className="px-6 py-5 text-slate-500 font-bold uppercase tracking-widest text-[10px]">Data Pelanggan</TableHead>
+                            <TableHead className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Layanan & Paket</TableHead>
+                            <TableHead className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Status Akun</TableHead>
+                            <TableHead className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Lokasi / Alamat</TableHead>
+                            <TableHead className="px-8 py-5 text-right text-slate-500 font-bold uppercase tracking-widest text-[10px]">Tindakan</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {!isLoading && data?.customers.data.map((customer: any) => (
-                            <TableRow key={customer.id} className="border-white/5 hover:bg-emerald-500/[0.02] transition-colors group">
-                                <TableCell className="px-6 py-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-zinc-800 border border-emerald-500/10 flex items-center justify-center text-emerald-400 font-bold shadow-lg transition-transform group-hover:scale-105">
+                        {!isLoading && data?.customers.data.map((customer: any, index: number) => (
+                            <TableRow key={customer.id} className="border-slate-800/50 hover:bg-white/[0.02] transition-colors group">
+                                <TableCell className="w-12 px-4 py-5 text-center font-mono text-[10px] text-slate-600 font-bold">
+                                    {((filters.page - 1) * 10) + index + 1}
+                                </TableCell>
+                                <TableCell className="px-6 py-5">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-black text-lg border border-emerald-500/20 shadow-lg group-hover:scale-110 transition-transform duration-300">
                                             {customer.name.substring(0, 1).toUpperCase()}
                                         </div>
-                                        <div className="flex flex-col">
-                                            <Link 
-                                                href={`/dashboard/admin/customers/${customer.id}`}
-                                                className="font-bold text-zinc-100 hover:text-emerald-400 transition-colors"
-                                            >
+                                        <div>
+                                            <Link href={`/dashboard/admin/customers/${customer.id}`} className="block text-sm font-bold text-slate-200 hover:text-emerald-400 transition-colors">
                                                 {customer.name}
                                             </Link>
-                                            <span className="text-[11px] text-zinc-500 flex items-center gap-1">
-                                                <Globe className="h-3 w-3" />
-                                                {customer.phone || '0xx-xxxx-xxxx'}
-                                            </span>
+                                            <span className="text-[10px] font-mono text-slate-500 tracking-wider">CID: {customer.customer_id}</span>
                                         </div>
                                     </div>
                                 </TableCell>
-                                <TableCell className="font-mono text-[11px] text-zinc-400 font-medium">
-                                    {customer.customer_id}
-                                </TableCell>
                                 <TableCell>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-semibold text-zinc-300">{customer.package?.name || '---'}</span>
-                                        <span className="text-[10px] text-zinc-600 uppercase tracking-tight">{customer.package?.speed_limit || 'Best Effort'}</span>
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold text-slate-300">{customer.package?.name || '---'}</p>
+                                        <p className="text-[10px] text-slate-500 uppercase font-medium">{customer.package?.speed_limit || 'UNLIMITED'}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge 
-                                        variant="outline" 
-                                        className={cn(
-                                            "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:brightness-125 transition-all border-none ring-1 ring-inset",
-                                            getStatusColor(customer.status)
-                                        )}
-                                        onClick={() => {
-                                            setSelectedCustomer(customer);
-                                            setNewStatus(customer.status);
-                                            setStatusDialogOpen(true);
-                                        }}
-                                    >
-                                        <div className="flex items-center gap-1.5 font-heading">
-                                            <div className="h-1 w-1 rounded-full bg-current animate-pulse" />
-                                            {customer.status_label}
-                                        </div>
-                                    </Badge>
+                                    {getStatusBadge(customer.status, customer.status_label)}
                                 </TableCell>
-                                <TableCell className="text-xs text-zinc-500 font-medium">
-                                    {new Date(customer.created_at).toLocaleDateString('id-ID', { 
-                                        day: '2-digit', 
-                                        month: 'short', 
-                                        year: 'numeric' 
-                                    })}
+                                <TableCell>
+                                    <div className="flex items-start space-x-2">
+                                        <MapPin className="w-3 h-3 text-slate-500 mt-0.5 shrink-0" />
+                                        <p className="text-xs text-slate-400 leading-normal line-clamp-2 max-w-[200px]">{customer.address}</p>
+                                    </div>
                                 </TableCell>
-                                <TableCell className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2 pr-0">
+                                <TableCell className="px-8 py-5 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
                                         <Link 
                                             href={`/dashboard/admin/customers/${customer.id}`}
-                                            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-9 w-9 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all")}
+                                            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-10 w-10 bg-blue-500/5 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 border border-blue-500/10 rounded-xl")}
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Link>
                                         <Link 
                                             href={`/dashboard/admin/customers/${customer.id}/edit`}
-                                            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-9 w-9 text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 rounded-xl transition-all")}
+                                            className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), "h-10 w-10 bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-700/50 rounded-xl")}
                                         >
                                             <Edit2 className="h-4 w-4" />
                                         </Link>
@@ -369,130 +271,64 @@ export default function AdminCustomersPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        
+
                         {!isLoading && data?.customers.data.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-72 text-center">
-                                    <div className="flex flex-col items-center justify-center gap-4 opacity-30 grayscale">
-                                        <div className="p-6 rounded-full bg-zinc-900 border border-zinc-800">
-                                            <Users className="h-12 w-12 text-zinc-400" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-lg font-heading font-medium text-white">Database Kosong</p>
-                                            <p className="text-sm">Gunakan pencarian lain atau buat pelanggan baru untuk ditampilkan disini.</p>
-                                        </div>
+                                <TableCell colSpan={5} className="py-24 text-center">
+                                    <div className="flex flex-col items-center justify-center opacity-30 grayscale grayscale-100">
+                                        <Users className="w-16 h-16 text-slate-400 mb-4" />
+                                        <p className="text-xl font-bold text-white mb-1">Database Tidak Ditemukan</p>
+                                        <p className="text-sm text-slate-500">Gunakan filter atau pencarian lain.</p>
                                     </div>
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
-                
-                {/* Pagination Hub */}
+
+                {/* Footer / Pagination */}
                 {!isLoading && data && data.customers.last_page > 1 && (
-                    <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">
-                                Entry: <span className="text-emerald-400">{data.customers.data.length}</span> / {data.customers.total}
-                            </p>
+                    <div className="p-8 flex items-center justify-between border-t border-slate-800 bg-slate-800/10">
+                        <div className="text-[10px] items-center space-x-1.5 hidden md:flex">
+                            <span className="text-slate-500 font-bold uppercase tracking-widest">Menampilkan</span>
+                            <span className="bg-slate-800 px-2 py-0.5 rounded-lg text-emerald-400 font-mono text-xs">{data.customers.data.length}</span>
+                            <span className="text-slate-500 font-bold uppercase tracking-widest">DR</span>
+                            <span className="text-white font-mono text-xs font-bold">{data.customers.total}</span>
+                            <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px] ml-2">Identitas Unik</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        
+                        <div className="flex items-center space-x-3">
                             <Button 
-                                variant="ghost" 
+                                variant="outline" 
                                 size="sm" 
-                                className="h-10 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl px-4 text-xs font-bold uppercase tracking-widest"
+                                className="h-10 bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl px-5 text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-30"
                                 disabled={filters.page === 1}
                                 onClick={() => setFilters({...filters, page: filters.page - 1})}
                             >
                                 <ChevronLeft className="h-4 w-4 mr-2" />
-                                Prev
+                                Kembali
                             </Button>
-                            
-                            <div className="flex items-center justify-center h-10 w-24 rounded-xl bg-zinc-950/50 border border-white/5 text-[11px] font-mono font-bold tracking-tighter">
-                                <span className="text-emerald-400 text-sm">{filters.page}</span>
-                                <span className="mx-2 text-zinc-700">OF</span>
-                                <span className="text-zinc-500">{data.customers.last_page}</span>
+
+                            <div className="h-10 flex items-center justify-center space-x-2 px-6 rounded-xl bg-slate-950 border border-slate-800">
+                                <span className="text-emerald-500 font-black text-sm">{filters.page}</span>
+                                <div className="w-px h-3 bg-slate-800 mx-2" />
+                                <span className="text-slate-600 font-bold text-xs uppercase tracking-widest">{data.customers.last_page}</span>
                             </div>
 
                             <Button 
-                                variant="ghost" 
+                                variant="outline" 
                                 size="sm" 
-                                className="h-10 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl px-4 text-xs font-bold uppercase tracking-widest"
+                                className="h-10 bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl px-5 text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-30"
                                 disabled={filters.page >= data.customers.last_page}
                                 onClick={() => setFilters({...filters, page: filters.page + 1})}
                             >
-                                Next
+                                Lanjut
                                 <ChevronRight className="h-4 w-4 ml-2" />
                             </Button>
                         </div>
                     </div>
                 )}
             </div>
-
-            {/* Status Update Dialog - Emerald Style */}
-            <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-                <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-md rounded-3xl backdrop-blur-2xl p-0 overflow-hidden">
-                    <div className="h-2 w-full bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-emerald-500/50" />
-                    
-                    <div className="p-6">
-                        <DialogHeader className="mb-4">
-                            <DialogTitle className="text-xl font-heading font-bold text-emerald-400">Update Progres Layanan</DialogTitle>
-                            <DialogDescription className="text-zinc-400">
-                                Mengubah status untuk identitas: <span className="text-zinc-100 font-mono text-[10px] bg-white/5 px-1.5 py-0.5 rounded">{selectedCustomer?.customer_id}</span>
-                            </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-6 py-2">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Status Operasional</label>
-                                <Select value={newStatus} onValueChange={(val) => setNewStatus(val ?? '')}>
-                                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-2xl transition-all focus:ring-emerald-500/20">
-                                        <SelectValue placeholder="Pilih status baru" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-                                        {data?.options.statuses && Object.entries(data.options.statuses).map(([key, label]) => (
-                                            <SelectItem key={key} value={key} className="focus:bg-emerald-500/20 focus:text-emerald-400 transition-colors">{label as string}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Internal Memo</label>
-                                <textarea 
-                                    placeholder="Tulis alasan perubahan status atau detail instruksi lapangan..." 
-                                    className="min-h-[100px] w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-emerald-500/50 transition-all resize-none"
-                                    value={statusNotes}
-                                    onChange={(e) => setStatusNotes(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        
-                        <DialogFooter className="mt-8 gap-3 sm:gap-0">
-                            <Button 
-                                variant="ghost" 
-                                className="flex-1 h-12 bg-transparent text-zinc-500 hover:text-white hover:bg-white/5 rounded-2xl font-bold uppercase tracking-widest text-xs"
-                                onClick={() => setStatusDialogOpen(false)}
-                            >
-                                Batal
-                            </Button>
-                            <Button 
-                                className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-emerald-600/20"
-                                onClick={handleUpdateStatus}
-                                disabled={updateStatusMutation.isPending}
-                            >
-                                {updateStatusMutation.isPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                ) : (
-                                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                                )}
-                                Konfirmasi
-                            </Button>
-                        </DialogFooter>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </DashboardPageShell>
     );
 }
-

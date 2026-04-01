@@ -74,11 +74,15 @@ export function StatCard({ title, value, sub, icon: Icon, color, up }: StatCardP
     const c = colorMap[color];
 
     return (
-        <div className={cn(
-            'relative group rounded-2xl p-5 bg-white/[0.025] border backdrop-blur-sm',
-            'hover:bg-white/[0.035] transition-all duration-300 overflow-hidden',
-            c.glow, c.border
-        )}>
+        <div 
+            role="button"
+            aria-label={`Statistik ${title}: ${value}`}
+            className={cn(
+                'relative group rounded-2xl p-5 bg-white/[0.025] border backdrop-blur-sm cursor-pointer',
+                'hover:bg-white/[0.035] hover:scale-[1.02] transition-all duration-300 overflow-hidden',
+                c.glow, c.border
+            )}
+        >
             {/* Background accent */}
             <div className={cn('absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl', c.glow)} />
 
@@ -86,9 +90,9 @@ export function StatCard({ title, value, sub, icon: Icon, color, up }: StatCardP
                 <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500 mb-2 truncate">{title}</p>
                     <p className={cn('text-2xl font-bold leading-none tracking-tight truncate', c.value)}>{value}</p>
-                    {sub && <p className="text-[11px] text-zinc-600 mt-1.5 truncate">{sub}</p>}
+                    {sub && <p className="text-[11px] text-zinc-600 mt-1.5 truncate uppercase font-bold tracking-tighter opacity-60">{sub}</p>}
                 </div>
-                <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center shrink-0', c.icon)}>
+                <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg', c.icon)}>
                     <Icon className="h-4 w-4" />
                 </div>
             </div>
@@ -96,10 +100,11 @@ export function StatCard({ title, value, sub, icon: Icon, color, up }: StatCardP
             {/* Trend indicator */}
             {up !== undefined && (
                 <div className={cn(
-                    'absolute bottom-3 right-4 flex items-center gap-1',
+                    'absolute bottom-3 right-4 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5',
                     up ? 'text-emerald-500' : 'text-rose-500'
                 )}>
                     {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    <span className="text-[9px] font-bold">Trend</span>
                 </div>
             )}
         </div>

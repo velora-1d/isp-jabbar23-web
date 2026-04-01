@@ -29,14 +29,35 @@ export interface Customer {
     email: string | null;
     address: string;
     rt_rw: string | null;
-    kelurahan: string;
-    kecamatan: string;
-    kabupaten: string;
-    provinsi: string;
+    kelurahan: string | null;
+    kecamatan: string | null;
+    kabupaten: string | null;
+    provinsi: string | null;
+    kode_pos: string | null;
+    latitude?: number;
+    longitude?: number;
+    package_id: number;
     status: string;
     status_label: string;
     status_color: string;
+    installation_date: string | null;
+    billing_date: string | null;
+    notes: string | null;
     created_at: string;
+    updated_at: string;
+    assigned_to: number | null;
+    team_size: number | null;
+    payment_token: string | null;
+    partner_id: number | null;
+    router_id: number | null;
+    pppoe_username: string | null;
+    pppoe_password: string | null;
+    mikrotik_ip: string | null;
+    olt_id: number | null;
+    onu_index: string | null;
+    ktp_number: string | null;
+    odp_port: string | null;
+    // Relations (for display)
     package?: {
         id: number;
         name: string;
@@ -60,8 +81,6 @@ export interface Customer {
     };
     status_logs?: StatusLog[];
     invoices?: Invoice[];
-    pppoe_username?: string;
-    mikrotik_ip?: string;
 }
 
 export interface CustomerStats {
@@ -85,7 +104,10 @@ export interface FilterOptions {
 export interface CustomerFormData {
     packages: Array<{ id: number; name: string; price: number }>;
     technicians: Array<{ id: number; name: string }>;
+    partners: Array<{ id: number; name: string }>;
     olts: Array<{ id: number; name: string; type: string }>;
+    routers: Array<{ id: number; name: string }>;
+    pppoe_profiles: Array<{ id: string; name: string }>;
     statuses: Record<string, string>;
 }
 

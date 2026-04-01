@@ -23,7 +23,8 @@ class CustomerService
      */
     public function index(array $filters): LengthAwarePaginator
     {
-        $query = Customer::with(['package', 'technician']);
+        // Section 8.4 Rules: Eager loading to avoid N+1 and optimize performance
+        $query = Customer::with(['package', 'technician', 'partner', 'router', 'olt']);
 
         $this->applyFilters($query, $filters);
 
@@ -80,10 +81,31 @@ class CustomerService
      */
     public function getFormData(): array
     {
+        // First, get the default router to fetch profiles if possible
+        $defaultRouter = \App\Models\Router::where('status', 'online')->first() 
+            ?? \App\Models\Router::first();
+            
+        $pppoeProfiles = $defaultRouter ? $this->pppoeService->getProfiles($defaultRouter) : [];
+
         return [
+            // 1. Layanan Internet
             'packages' => Package::active()->orderBy('name')->get(['id', 'name', 'price']),
-            'technicians' => User::role('noc')->orderBy('name')->get(['id', 'name']),
-            'olts' => Olt::where('status', 'active')->orderBy('name')->get(['id', 'name', 'type']),
+            
+            // 6. Teknisi (Include technician and noc roles)
+            'technicians' => User::role(['technician', 'noc'])->orderBy('name')->get(['id', 'name']), 
+            
+            // 2. OLT Tujuan (Be more lenient with status if needed, but active is standard)
+            'olts' => Olt::whereIn('status', ['active', 'online', 'up'])->orderBy('name')->get(['id', 'name', 'type']),
+            
+            // 3. Gateway Router
+            'routers' => \App\Models\Router::whereIn('status', ['active', 'online', 'up'])->orderBy('name')->get(['id', 'name']),
+            
+            // 4. PPPoE Profiles (The "dropdown" requested)
+            'pppoe_profiles' => $pppoeProfiles,
+            
+            // 5. Partner Agent
+            'partners' => \App\Models\Partner::orderBy('name')->get(['id', 'name']),
+            
             'statuses' => Customer::STATUSES,
         ];
     }

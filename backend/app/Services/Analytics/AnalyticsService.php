@@ -19,19 +19,36 @@ class AnalyticsService
      */
     public function getNetworkStats(): array
     {
-        $totalCustomers = $this->analyticsRepository->getTotalCustomers();
-        $activePppoe = (int) Cache::get("network:stats:total_pppoe", 0);
+        return Cache::remember('analytics:network', 60, function() {
+            $totalCustomers = $this->analyticsRepository->getTotalCustomers();
+            $prevCustomers = $this->analyticsRepository->getActiveCustomersForPreviousMonth();
+            $activePppoe = (int) Cache::get("network:stats:total_pppoe", 0);
 
-        return [
-            'total_customers' => $totalCustomers,
-            'total_online'    => $activePppoe,
-            'total_offline'   => max(0, $totalCustomers - $activePppoe),
-            'active_pppoe'    => $activePppoe,
-            'hotspot_active'  => 0, 
-            'routers_online'  => $this->analyticsRepository->getOnlineRoutersCount(),
-            'total_routers'   => $this->analyticsRepository->getTotalRoutersCount(),
-            'routers'         => $this->analyticsRepository->getRouterStatuses(),
-        ];
+            $trend = 0;
+            if ($prevCustomers > 0) {
+                $trend = round((($totalCustomers - $prevCustomers) / $prevCustomers) * 100, 1);
+            }
+
+            $totalRouters = $this->analyticsRepository->getTotalRoutersCount();
+            $onlineRouters = $this->analyticsRepository->getOnlineRoutersCount();
+            $health = $totalRouters > 0 ? round(($onlineRouters / $totalRouters) * 100) : 100;
+
+            return [
+                'total_customers' => $totalCustomers,
+                'total_online'    => $activePppoe,
+                'total_offline'   => max(0, $totalCustomers - $activePppoe),
+                'active_pppoe'    => $activePppoe,
+                'hotspot_active'  => (int) \DB::table('hotspot_vouchers')->where('status', 'active')->count(), 
+                'routers_online'  => $onlineRouters,
+                'total_routers'   => $totalRouters,
+                'routers'         => $this->analyticsRepository->getRouterStatuses(),
+                'odp_count'       => $this->analyticsRepository->getOdpCount(),
+                'olt_count'       => $this->analyticsRepository->getOltCount(),
+                'infra_summary'   => $this->analyticsRepository->getInfrastructureSummary(),
+                'network_health'  => $health,
+                'trend'           => ($trend >= 0 ? '+' : '') . $trend . '%',
+            ];
+        });
     }
 
     /**
@@ -45,6 +62,7 @@ class AnalyticsService
             
             $monthlyRevenue = $this->analyticsRepository->getMonthlyRevenueBreakdown($year);
             $monthRevenue = $this->analyticsRepository->getRevenueForMonth($year, $currentMonth);
+            $prevMonthRevenue = $this->analyticsRepository->getRevenueForPreviousMonth();
             
             $totalInvoiced = $this->analyticsRepository->getTotalInvoicedByYear($year);
             $totalPaid = $this->analyticsRepository->getTotalPaidByYear($year);
@@ -54,12 +72,29 @@ class AnalyticsService
                 $collectionRate = round(($totalPaid / $totalInvoiced) * 100, 2);
             }
 
+            // Calculate billing trend (current vs previous month collection rate)
+            $prevMonth = now()->subMonth();
+            $prevRate = $this->analyticsRepository->getCollectionRateForMonth($prevMonth->year, $prevMonth->month);
+            $billTrend = 0;
+            if ($prevRate > 0) {
+                $billTrend = round((($collectionRate - $prevRate) / $prevRate) * 100, 1);
+            }
+
+            // Calculate revenue trend
+            $revTrend = 0;
+            if ($prevMonthRevenue > 0) {
+                $revTrend = round((($monthRevenue - $prevMonthRevenue) / $prevMonthRevenue) * 100, 1);
+            }
+
             return [
                 'monthly_revenue' => $monthlyRevenue,
                 'month_revenue' => $monthRevenue,
                 'total_ytd' => $totalPaid,
                 'collection_rate' => $collectionRate,
-                'unpaid_receivables' => $totalInvoiced - $totalPaid
+                'unpaid_receivables' => $totalInvoiced - $totalPaid,
+                'regional_performance' => $this->analyticsRepository->getBillingPerformanceByRegion(),
+                'revenue_trend' => ($revTrend >= 0 ? '+' : '') . $revTrend . '%',
+                'billing_trend' => ($billTrend >= 0 ? '+' : '') . $billTrend . '%',
             ];
         });
     }
@@ -72,11 +107,12 @@ class AnalyticsService
         return Cache::remember('analytics:staff', 600, function() {
             $today = now()->toDateString();
             $attendanceCount = $this->analyticsRepository->getAttendanceCountForToday($today);
-            $totalStaff = $this->analyticsRepository->getTotalOperationalStaffCount();
+            $totalStaff = \App\Models\User::count();
 
             return [
                 'staff_online' => $attendanceCount,
                 'total_staff' => $totalStaff,
+                'by_role' => $this->analyticsRepository->getStaffCountByRole(),
                 'attendance_rate' => $totalStaff > 0 ? round(($attendanceCount / $totalStaff) * 100, 2) : 0
             ];
         });
@@ -104,6 +140,7 @@ class AnalyticsService
             return [
                 'open_count' => $this->analyticsRepository->getOpenTicketsCount(),
                 'in_progress_count' => $this->analyticsRepository->getInProgressTicketsCount(),
+                'monthly_trend' => $this->analyticsRepository->getTicketMonthlyTrend(6),
             ];
         });
     }

@@ -44,16 +44,26 @@ class AnalyticsRepository
     }
 
     /**
-     * Get router statuses.
+     * Get router statuses with latest health metrics.
      */
     public function getRouterStatuses()
     {
-        return Router::select('name', 'status as is_up')->get()->map(function($r) {
-            return [
-                'name' => $r->name,
-                'is_up' => $r->is_up === 'online'
-            ];
-        });
+        return Router::select('id', 'name', 'status')
+            ->get()
+            ->map(function($r) {
+                $latestLog = DB::table('router_health_logs')
+                    ->where('router_id', $r->id)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                return [
+                    'name' => $r->name,
+                    'is_up' => $r->status === 'online',
+                    'online' => $latestLog ? (int) $latestLog->active_pppoe : 0,
+                    'cpu_load' => $latestLog ? (float) $latestLog->cpu_load : 0,
+                    'status_label' => $r->status === 'online' ? 'Stable' : 'Offline'
+                ];
+            });
     }
 
     /**
@@ -109,20 +119,17 @@ class AnalyticsRepository
     }
 
     /**
-     * Get total staff excluding super_admin and admin.
+     * Get counts of users per role (Eloquent Implementation).
      */
-    public function getTotalOperationalStaffCount(): int
+    public function getStaffCountByRole(): array
     {
-        return DB::table('users')
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('model_has_roles')
-                    ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-                    ->whereColumn('model_has_roles.model_id', 'users.id')
-                    ->where('model_has_roles.model_type', 'App\\Models\\User')
-                    ->whereNotIn('roles.name', ['admin', 'super_admin']);
-            })
-            ->count();
+        return \Spatie\Permission\Models\Role::withCount('users')
+            ->get(['id', 'name'])
+            ->map(fn($role) => [
+                'name' => $role->name,
+                'total' => $role->users_count
+            ])
+            ->toArray();
     }
 
     /**
@@ -324,4 +331,144 @@ class AnalyticsRepository
 
         return $query->sum('amount');
     }
+
+    /**
+     * Get support ticket monthly trend for the last N months.
+     */
+    public function getTicketMonthlyTrend(int $months = 6): array
+    {
+        $trends = Ticket::where('created_at', '>=', now()->subMonths($months - 1)->startOfMonth())
+            ->select(
+                DB::raw("TO_CHAR(created_at, 'Mon') as month_name"),
+                DB::raw('EXTRACT(MONTH FROM created_at) as month'),
+                DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('month_name', 'month', 'year')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get();
+
+        $monthsList = collect();
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthsList->push([
+                'month'          => (int) $date->format('m'),
+                'month_name'     => $date->format('M'),
+                'year'           => (int) $date->format('Y'),
+                'sort_key'       => $date->format('Y-m'),
+                'total'          => 0
+            ]);
+        }
+
+        $monthsDict = $monthsList->keyBy('sort_key')->toArray();
+
+        foreach ($trends as $t) {
+            $sortKey = sprintf('%04d-%02d', $t->year, $t->month);
+            if (isset($monthsDict[$sortKey])) {
+                $monthsDict[$sortKey]['total'] = (int) $t->total;
+            }
+        }
+
+        return array_values($monthsDict);
+    }
+
+    /**
+     * Get real ODP count.
+     */
+    public function getOdpCount(): int
+    {
+        return DB::table('odps')->count();
+    }
+
+    /**
+     * Get real OLT count.
+     */
+    public function getOltCount(): int
+    {
+        return DB::table('olts')->count();
+    }
+
+    /**
+     * Get summary of network infrastructure assets.
+     */
+    public function getInfrastructureSummary(): array
+    {
+        return [
+            'odp' => $this->getOdpCount(),
+            'olt' => $this->getOltCount(),
+            'network_assets' => DB::table('assets')->where('category', 'network')->count(),
+            'routers' => Router::count(),
+        ];
+    }
+
+    /**
+     * Get revenue for the previous month.
+     */
+    public function getRevenueForPreviousMonth(): float
+    {
+        $prev = now()->subMonth();
+        return $this->getRevenueForMonth($prev->year, $prev->month);
+    }
+
+    /**
+     * Get active customer count as of the end of the previous month.
+     */
+    public function getActiveCustomersForPreviousMonth(): int
+    {
+        $lastDayPrevMonth = now()->subMonth()->endOfMonth();
+        return Customer::where('status', 'active')
+            ->where('created_at', '<=', $lastDayPrevMonth)
+            ->count();
+    }
+
+    /**
+     * Get total invoiced amount for the previous month.
+     */
+    public function getInvoicedForPreviousMonth(): float
+    {
+        $prev = now()->subMonth();
+        return Invoice::whereYear('period_start', $prev->year)
+            ->whereMonth('period_start', $prev->month)
+            ->sum('total_after_tax');
+    }
+
+    /**
+     * Get billing performance (Paid vs Unpaid) grouped by customer region (Kecamatan).
+     */
+    public function getBillingPerformanceByRegion(): array
+    {
+        return DB::table('invoices')
+            ->join('customers', 'invoices.customer_id', '=', 'customers.id')
+            ->select(
+                DB::raw("COALESCE(customers.kecamatan, 'Lainnya') as region"),
+                DB::raw("SUM(CASE WHEN invoices.status = 'paid' THEN invoices.total_after_tax ELSE 0 END) as paid"),
+                DB::raw("SUM(CASE WHEN invoices.status = 'unpaid' THEN invoices.total_after_tax ELSE 0 END) as unpaid")
+            )
+            ->groupBy('region')
+            ->orderBy('paid', 'desc')
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Get collection rate for a specific month.
+     */
+    public function getCollectionRateForMonth(int $year, int $month): float
+    {
+        $totalInvoiced = Invoice::whereYear('period_start', $year)
+            ->whereMonth('period_start', $month)
+            ->sum('total_after_tax');
+
+        if ($totalInvoiced <= 0) return 0;
+
+        $totalPaid = Invoice::whereYear('period_start', $year)
+            ->whereMonth('period_start', $month)
+            ->where('status', 'paid')
+            ->sum('total_after_tax');
+
+        return round(($totalPaid / $totalInvoiced) * 100, 1);
+    }
 }
+
+

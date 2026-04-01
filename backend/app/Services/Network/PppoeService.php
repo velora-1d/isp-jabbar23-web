@@ -42,7 +42,7 @@ class PppoeService
                 "name"     => $customer->pppoe_username,
                 "password" => $customer->pppoe_password ?? '1234',
                 "service"  => "pppoe",
-                "profile"  => $customer->package?->name ?? 'default',
+                "profile"  => $customer->pppoe_profile ?? $customer->package?->name ?? 'default',
                 "remote-address" => $customer->mikrotik_ip,
                 "comment"  => "ID: {$customer->customer_id} - {$customer->name}",
                 "disabled" => $this->shouldBeDisabled($customer->status) ? "yes" : "no",
@@ -127,6 +127,36 @@ class PppoeService
         }
 
         return false;
+    }
+
+    /**
+     * Get all PPPoE profiles from the router.
+     */
+    public function getProfiles(Router $router): array
+    {
+        try {
+            $config = (new Config())
+                ->set('host', $router->ip_address)
+                ->set('user', $router->username)
+                ->set('pass', $router->password)
+                ->set('port', $router->port ?? 8728)
+                ->set('timeout', 2);
+
+            $client = new Client($config);
+            $query = new Query("/ppp/profile/print");
+            
+            $profiles = $client->query($query)->read();
+            
+            return array_map(function($p) {
+                return [
+                    'id' => $p['name'],
+                    'name' => $p['name'] . ($p['local-address'] ?? '' ? " ({$p['local-address']})" : ""),
+                ];
+            }, $profiles);
+        } catch (Exception $e) {
+            Log::error("MikroTik Profiles Error: " . $e->getMessage());
+            return [['id' => 'default', 'name' => 'default']];
+        }
     }
 
     /**

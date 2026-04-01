@@ -23,6 +23,8 @@ class WhatsappService
      */
     public function sendMessage(string $to, string $message): bool
     {
+        $to = $this->formatPhone($to);
+        
         try {
             if ($this->provider === 'fonnte') {
                 return $this->sendViaFonnte($to, $message);
@@ -75,5 +77,21 @@ class WhatsappService
         ]);
 
         return $response->successful();
+    }
+
+    /**
+     * Format phone number to Indonesian format (628...).
+     */
+    protected function formatPhone(string $phone): string
+    {
+        // Remove non-numeric characters
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        // Convert 08xx to 628xx
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        return $phone;
     }
 }

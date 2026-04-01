@@ -13,10 +13,22 @@ export interface AnalyticsResponse {
             routers_online?: number;
             total_routers?: number;
             new_customers_month?: number;
+            odp_count?: number;
+            olt_count?: number;
+            infra_summary?: {
+                odp: number;
+                olt: number;
+                network_assets: number;
+                routers: number;
+            };
+            network_health?: number;
+            trend?: string;
             routers: {
                 name: string;
-                online?: number;
+                online: number;
                 is_up: boolean;
+                cpu_load?: number;
+                status_label?: string;
             }[];
         };
         finance: {
@@ -29,17 +41,25 @@ export interface AnalyticsResponse {
             total_ytd: number;
             collection_rate: number;
             unpaid_receivables: number;
+            revenue_trend?: string;
+            billing_trend?: string;
             monthly_invoice_stats?: {
                 month: number;
                 month_name: string;
                 paid: number;
                 unpaid: number;
             }[];
+            regional_performance?: {
+                region: string;
+                paid: number | string;
+                unpaid: number | string;
+            }[];
         };
         staff: {
             staff_online: number;
             total_staff: number;
             attendance_rate: number;
+            by_role?: { name: string; total: number }[];
         };
         invoices: {
             unpaid_count: number;

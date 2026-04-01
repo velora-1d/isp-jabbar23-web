@@ -10,6 +10,7 @@ class Partner extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'code',
         'email',

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,7 @@ import {
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage,
-  FormDescription
+  FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,49 +23,73 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   User, 
   MapPin, 
-  Settings, 
-  Truck, 
+  Activity, 
   Network, 
   Loader2,
-  ChevronRight,
-  Save,
-  X
+  CheckCircle2,
+  Calendar,
+  Wallet,
+  Cpu,
+  BadgeInfo,
+  ShieldCheck,
+  PackageCheck,
+  Globe,
+  Settings,
+  HardDrive,
+  Users
 } from 'lucide-react';
 import { useCustomerFormData } from '@/hooks/use-customers';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const customerSchema = z.object({
-  name: z.string().min(3, 'Nama minimal 3 karakter'),
-  phone: z.string().nullable().optional(),
-  email: z.string().email('Email tidak valid').nullable().optional().or(z.literal('')),
-  address: z.string().min(5, 'Alamat minimal 5 karakter'),
-  rt_rw: z.string().nullable().optional(),
-  kelurahan: z.string().nullable().optional(),
-  kecamatan: z.string().nullable().optional(),
-  kabupaten: z.string().nullable().optional(),
-  provinsi: z.string().nullable().optional(),
-  kode_pos: z.string().nullable().optional(),
-  latitude: z.string().nullable().optional(),
-  longitude: z.string().nullable().optional(),
-  package_id: z.string().min(1, 'Paket harus dipilih'),
-  status: z.string().min(1, 'Status harus dipilih'),
-  assigned_to: z.string().nullable().optional(),
-  // Fix: gunakan .default() tanpa .optional() agar tipe menjadi `number`, bukan `number | undefined`
-  team_size: z.coerce.number().min(1).max(10).default(1),
-  installation_date: z.string().nullable().optional(),
-  billing_date: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
-  olt_id: z.string().nullable().optional(),
-  onu_index: z.string().nullable().optional(),
-  pppoe_username: z.string().nullable().optional(),
-  pppoe_password: z.string().nullable().optional(),
-  username: z.string().min(3, 'Username minimal 3 karakter').optional(),
-  password: z.string().min(4, 'Password minimal 4 karakter').optional(),
+  // Identitas
+  name: z.string().min(1, 'Nama wajib diisi'),
+  ktp_number: z.string().min(16, 'KTP wajib 16 digit').max(20),
+  phone: z.string().min(10, 'No HP wajib diisi'),
+  email: z.string().email('Email tidak valid').min(1, 'Email wajib diisi'),
+  
+  // Alamat
+  address: z.string().min(1, 'Alamat wajib diisi'),
+  rt_rw: z.string().min(1, 'RT/RW wajib diisi'),
+  kelurahan: z.string().min(1, 'Kelurahan wajib diisi'),
+  kecamatan: z.string().min(1, 'Kecamatan wajib diisi'),
+  kabupaten: z.string().min(1, 'Kabupaten wajib diisi'),
+  provinsi: z.string().min(1, 'Provinsi wajib diisi'),
+  kode_pos: z.string().min(1, 'Kode Pos wajib diisi'),
+  
+  // GPS
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+  
+  // Paket & Detail Pemasangan
+  package_id: z.string().min(1, 'Pilih paket'),
+  installation_date: z.string().min(1, 'Tgl Instalasi wajib diisi'),
+  billing_date: z.string().min(1, 'Tgl Tagihan wajib diisi'),
+  
+  // Teknis Jaringan (OLT/ODP)
+  olt_id: z.string().min(1, 'Pilih OLT'),
+  odp_port: z.string().min(1, 'Port ODP wajib diisi'),
+  onu_index: z.string().min(1, 'ONU Index wajib diisi'),
+  
+  // Mikrotik
+  router_id: z.string().min(1, 'Pilih Router'),
+  pppoe_profile: z.string().min(1, 'Pilih Profile PPPoE'),
+  pppoe_username: z.string().min(1, 'PPPoE Username wajib diisi'),
+  pppoe_password: z.string().min(1, 'PPPoE Password wajib diisi'),
+  mikrotik_ip: z.string().min(7, 'IP MikroTik wajib diisi'),
+  
+  // Manajemen
+  partner_id: z.string().min(1, 'Pilih Partner'),
+  assigned_to: z.string().min(1, 'Pilih Teknisi'),
+  team_size: z.coerce.number().min(1, 'Jumlah tim wajib diisi'),
+  status: z.string().min(1, 'Pilih status'),
+  notes: z.string().min(1, 'Catatan wajib diisi'),
 });
 
 type CustomerFormValues = z.infer<typeof customerSchema>;
@@ -78,16 +101,13 @@ interface CustomerFormProps {
 }
 
 export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormProps) {
-  const router = useRouter();
   const { data: formData, isLoading: isLoadingOptions } = useCustomerFormData();
-
-  // useForm<any>: solusi definitif untuk incompatibility @hookform/resolvers v3 + zodResolver.
-  // Zod tetap memvalidasi semua data di runtime — type safety tidak berkurang.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const form = useForm<any>({
+  
+  const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: initialData || {
       name: '',
+      ktp_number: '',
       phone: '',
       email: '',
       address: '',
@@ -95,560 +115,314 @@ export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormP
       kelurahan: '',
       kecamatan: '',
       kabupaten: '',
-      provinsi: '',
+      provinsi: 'Jawa Barat',
       kode_pos: '',
-      latitude: null,
-      longitude: null,
+      latitude: -6.1,
+      longitude: 106.8,
       package_id: '',
-      status: 'registered',
-      assigned_to: '',
-      team_size: 2,
-      installation_date: '',
-      billing_date: '',
-      notes: '',
+      installation_date: new Date().toISOString().split('T')[0],
+      billing_date: new Date().toISOString().split('T')[0],
       olt_id: '',
-      onu_index: '',
-      username: '',
-      password: '',
+      odp_port: '1',
+      onu_index: '1/1/1',
+      router_id: '',
+      pppoe_profile: 'default',
+      pppoe_username: '',
+      pppoe_password: '123',
+      mikrotik_ip: '10.88.x.x',
+      partner_id: '',
+      assigned_to: '',
+      team_size: 1,
+      status: 'registered',
+      notes: '-',
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = async (values: any) => {
+  const selectedPackageId = useWatch({ control: form.control, name: 'package_id' });
+  const selectedPackage = formData?.packages.find(p => p.id.toString() === selectedPackageId);
+
+  const handleSubmit = async (values: CustomerFormValues) => {
     try {
-      // Normalisasi data sebelum dikirim (string kosong -> null)
-      const dataToSubmit = {
-        ...values,
-        latitude: values.latitude === '' ? null : values.latitude,
-        longitude: values.longitude === '' ? null : values.longitude,
-      };
-      await onSubmit(dataToSubmit as CustomerFormValues);
+      await onSubmit(values);
     } catch (error: any) {
       console.error(error);
-      toast.error(error.response?.data?.message || 'Terjadi kesalahan saat menyimpan data.');
+      toast.error(error.response?.data?.message || 'Gagal menyimpan data.');
     }
   };
 
   if (isLoadingOptions) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-gray-400 animate-pulse text-sm">Memuat data referensi...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 text-emerald-500">
+        <Loader2 className="w-12 h-12 animate-spin text-emerald-500" />
+        <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Syncing Database Structure...</p>
       </div>
     );
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 pb-20">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Section 1: Personal Info */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <User className="w-5 h-5 text-blue-400" />
-              <span>Informasi Personal</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Lengkap *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" className="bg-gray-950/50 border-gray-800" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>No. Telepon</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0812XXXXXXXX" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="john@example.com" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Section 1.5: Account Credentials */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-indigo-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <Settings className="w-5 h-5 text-indigo-400" />
-              <span>Kredensial Login (Aplikasi)</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="username_pelanggan" className="bg-gray-950/50 border-gray-800" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" className="bg-gray-950/50 border-gray-800" {...field} />
-                  </FormControl>
-                  <FormDescription className="text-xs">
-                    Minimal 4 karakter. Biarkan kosong jika tidak ingin mengubah.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Section 2: Address */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md">
-          <CardHeader className="bg-gradient-to-r from-cyan-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-cyan-400" />
-              <span>Informasi Alamat</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Alamat Lengkap *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Jl. Merdeka No. 1..." 
-                      className="bg-gray-950/50 border-gray-800 min-h-[100px] resize-none" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <FormField
-                control={form.control}
-                name="rt_rw"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RT/RW</FormLabel>
-                    <FormControl>
-                      <Input placeholder="001/002" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kelurahan"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kelurahan</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Cipedak" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kecamatan"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kecamatan</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jagakarsa" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kode_pos"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kode Pos</FormLabel>
-                    <FormControl>
-                      <Input placeholder="12630" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        {/* ── Left Column: Form Sections ─────────────────────────── */}
+        <div className="lg:col-span-8 space-y-6">
+          
+          {/* Section 1: Customer Identity */}
+          <SectionCard title="Identitas Pelanggan" subtitle="Data Kependudukan (Wajib)" icon={User} accentColor="emerald">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormFieldInput name="name" label="Nama Lengkap" placeholder="Masukkan nama" control={form.control} />
+              <FormFieldInput name="ktp_number" label="Nomor KTP" placeholder="317xxxxxxxxxxxxx" control={form.control} />
+              <FormFieldInput name="phone" label="No WhatsApp" placeholder="0812xxxx" control={form.control} />
+              <FormFieldInput name="email" label="Email" placeholder="user@jabbar.com" control={form.control} />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="kabupaten"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kabupaten / Kota</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jakarta Selatan" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="provinsi"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Provinsi</FormLabel>
-                    <FormControl>
-                      <Input placeholder="DKI Jakarta" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          </SectionCard>
+
+          {/* Section 2: Address Detail */}
+          <SectionCard title="Alamat Pemasangan" subtitle="Lokasi Fisik Jaringan" icon={MapPin} accentColor="blue">
+            <div className="space-y-6">
+              <FormFieldTextarea name="address" label="Alamat / Blok / No" placeholder="Jl. Raya Keadilan No. 23..." control={form.control} />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <FormFieldInput name="rt_rw" label="RT / RW" placeholder="001/001" control={form.control} />
+                <FormFieldInput name="kelurahan" label="Kelurahan" placeholder="Kelurahan" control={form.control} />
+                <FormFieldInput name="kecamatan" label="Kecamatan" placeholder="Kecamatan" control={form.control} />
+                <FormFieldInput name="kabupaten" label="Kabupaten / Kota" placeholder="Kota" control={form.control} />
+                <FormFieldInput name="provinsi" label="Provinsi" placeholder="Provinsi" control={form.control} />
+                <FormFieldInput name="kode_pos" label="Kode Pos" placeholder="12345" control={form.control} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="latitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Latitude</FormLabel>
-                    <FormControl>
-                      <Input placeholder="-6.12345" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="longitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Longitude</FormLabel>
-                    <FormControl>
-                      <Input placeholder="106.12345" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          </SectionCard>
+
+          {/* Section 3: GPS Coordinates */}
+          <SectionCard title="Titik Lokasi (GPS)" subtitle="Koordinat Geospasial" icon={Globe} accentColor="indigo">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormFieldInput name="latitude" label="Latitude" placeholder="-6.123456" control={form.control} type="number" />
+              <FormFieldInput name="longitude" label="Longitude" placeholder="106.123456" control={form.control} type="number" />
             </div>
-          </CardContent>
-        </Card>
+          </SectionCard>
 
-        {/* Section 3: Subscription */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md">
-          <CardHeader className="bg-gradient-to-r from-amber-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <Settings className="w-5 h-5 text-amber-400" />
-              <span>Detail Langganan</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="package_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Paket Internet *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-gray-950/50 border-gray-800">
-                        <SelectValue placeholder="Pilih paket" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                      {formData?.packages.map((pkg) => (
-                        <SelectItem key={pkg.id} value={pkg.id.toString()}>
-                          {pkg.name} - Rp {pkg.price.toLocaleString('id-ID')}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-gray-950/50 border-gray-800">
-                        <SelectValue placeholder="Pilih status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                      {Object.entries(formData?.statuses || {}).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label as string}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="installation_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Instalasi</FormLabel>
-                  <FormControl>
-                    <Input type="date" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="billing_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Tagihan</FormLabel>
-                  <FormControl>
-                    <Input type="date" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+          {/* Section 4: Infrastructure - OLT/ODP */}
+          <SectionCard title="Infrastruktur GPON" subtitle="Distribusi Jaringan" icon={Cpu} accentColor="amber">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <FormFieldSelect 
+                  name="olt_id" 
+                  label="OLT Tujuan" 
+                  options={formData?.olts.map(o => ({ id: o.id.toString(), name: o.name })) || []} 
+                  control={form.control} 
+                />
+              </div>
+              <FormFieldInput name="odp_port" label="Port ODP" placeholder="1" control={form.control} />
+              <FormFieldInput name="onu_index" label="ONU Index" placeholder="1/1/1" control={form.control} />
+            </div>
+          </SectionCard>
 
-        {/* Section 4: Installation Team */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md">
-          <CardHeader className="bg-gradient-to-r from-emerald-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <Truck className="w-5 h-5 text-emerald-400" />
-              <span>Tim & Teknisi</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="assigned_to"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>PIC / Teknisi</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger className="bg-gray-950/50 border-gray-800">
-                        <SelectValue placeholder="Belum ditentukan" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                      <SelectItem value="none">-- Belum Ditentukan --</SelectItem>
-                      {formData?.technicians.map((tech) => (
-                        <SelectItem key={tech.id} value={tech.id.toString()}>
-                          {tech.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="team_size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Jumlah Tim Anggota</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min={1} 
-                      max={10} 
-                      className="bg-gray-950/50 border-gray-800" 
-                      {...field} 
-                      value={field.value ?? ''}
-                      onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+          {/* Section 5: Mikrotik Config */}
+          <SectionCard title="Konfigurasi MikroTik" subtitle="Akses PPPoE & IP Management" icon={Activity} accentColor="rose">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormFieldSelect 
+                name="router_id" 
+                label="Gateway Router" 
+                options={formData?.routers.map(r => ({ id: r.id.toString(), name: r.name })) || []} 
+                control={form.control} 
+              />
+              <FormFieldSelect 
+                name="pppoe_profile" 
+                label="Profile PPPoE" 
+                options={formData?.pppoe_profiles || []} 
+                control={form.control} 
+              />
+              <FormFieldInput name="pppoe_username" label="PPPoE User / Secret" placeholder="user.jabbar" control={form.control} />
+              <FormFieldInput name="pppoe_password" label="PPPoE Pass" placeholder="***" control={form.control} />
+              <div className="md:col-span-2">
+                <FormFieldInput name="mikrotik_ip" label="Management IP (Static / Remote)" placeholder="10.88.x.x" control={form.control} />
+              </div>
+            </div>
+          </SectionCard>
 
-        {/* Section 5: Network */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md">
-          <CardHeader className="bg-gradient-to-r from-purple-600/10 to-transparent border-b border-gray-800/50">
-            <CardTitle className="text-lg flex items-center space-x-2">
-              <Network className="w-5 h-5 text-purple-400" />
-              <span>Konfigurasi Jaringan (OLT)</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="olt_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Pilih OLT</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger className="bg-gray-950/50 border-gray-800">
-                        <SelectValue placeholder="Tidak terhubung OLT" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-gray-900 border-gray-800">
-                       <SelectItem value="none">-- Tidak Terhubung --</SelectItem>
-                      {formData?.olts.map((olt) => (
-                        <SelectItem key={olt.id} value={olt.id.toString()}>
-                          {olt.name} ({olt.type})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="onu_index"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ONU Interface / Index</FormLabel>
-                  <FormControl>
-                    <Input placeholder="gpon-onu_1/1/1:1" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormDescription className="text-xs">
-                    Format Huawei: 0/1/0:1 | ZTE: gpon-onu_1/1/1:1
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="pppoe_username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>PPPoE Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="user_pppoe" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="pppoe_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>PPPoE Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" className="bg-gray-950/50 border-gray-800" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+          {/* Section 6: Management */}
+          <SectionCard title="Administrasi & PIC" subtitle="Delegasi Tugas" icon={Settings} accentColor="slate">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormFieldSelect 
+                name="partner_id" 
+                label="Partner / Agen" 
+                options={formData?.partners.map(p => ({ id: p.id.toString(), name: p.name })) || []} 
+                control={form.control} 
+              />
+              <FormFieldSelect 
+                name="assigned_to" 
+                label="Teknisi" 
+                options={formData?.technicians.map(t => ({ id: t.id.toString(), name: t.name })) || []} 
+                control={form.control} 
+              />
+              <FormFieldInput name="team_size" label="Jumlah Tim" placeholder="1" control={form.control} type="number" />
+              <FormFieldSelect 
+                name="status" 
+                label="Status" 
+                options={Object.entries(formData?.statuses || {}).map(([id, name]) => ({ id, name }))} 
+                control={form.control} 
+              />
+              <div className="md:col-span-2">
+                <FormFieldTextarea name="notes" label="Catatan" placeholder="Instruksi khusus..." control={form.control} />
+              </div>
+            </div>
+          </SectionCard>
 
-        {/* Notes */}
-        <Card className="bg-gray-900/40 border-gray-800 backdrop-blur-md">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Catatan Internal</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Masukkan catatan teknis atau instruksi khusus..." 
-                      className="bg-gray-950/50 border-gray-800 min-h-[100px] resize-none" 
-                      {...field} 
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Footer Actions */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-950/80 backdrop-blur-xl border-t border-gray-800 flex items-center justify-end space-x-4 z-50">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            onClick={() => router.back()}
-            disabled={isLoading}
-            className="text-gray-400 hover:text-white"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Batal
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-lg shadow-blue-500/20 px-8"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
-            )}
-            {initialData ? 'Perbarui Pelanggan' : 'Daftarkan Pelanggan'}
-          </Button>
         </div>
 
+        {/* ── Right Column: Registry Summary ─────────────────────── */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="bg-slate-900 border-emerald-500/20 backdrop-blur-3xl sticky top-24 overflow-hidden rounded-3xl border-t-8 border-t-emerald-500">
+            <CardContent className="p-8 space-y-8">
+              <div className="flex items-center gap-3">
+                <PackageCheck className="w-6 h-6 text-emerald-500" />
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">Paket & Billing</h3>
+              </div>
+
+              <div className="space-y-6">
+                <FormFieldSelect 
+                  name="package_id" 
+                  label="Layanan Internet" 
+                  options={formData?.packages.map(p => ({ id: p.id.toString(), name: `${p.name} - Rp${p.price.toLocaleString()}` })) || []} 
+                  control={form.control} 
+                />
+                
+                <FormFieldInput name="installation_date" label="Tgl Pemasangan" control={form.control} type="date" />
+                <FormFieldInput name="billing_date" label="Tgl Tagihan" control={form.control} type="date" />
+              </div>
+
+              <Separator className="bg-slate-800" />
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <span>Biaya Bulanan:</span>
+                  <span className="text-white">Rp {(selectedPackage?.price || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-base font-black text-emerald-400">
+                  <span className="uppercase tracking-tight">Total Tagihan:</span>
+                  <span>Rp {(selectedPackage?.price || 0).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Kirim Registrasi'}
+              </Button>
+
+              <p className="text-[9px] text-center text-slate-500 font-medium leading-relaxed">
+                * Dengan mengirim form ini, data akan langsung terintegrasi dengan sistem RADIUS dan monitoring jaringan PT Fakta Jabbar Industri.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </form>
     </Form>
+  );
+}
+
+// ── Shared Internal Components ─────────────────────────────────────
+
+function SectionCard({ title, subtitle, icon: Icon, accentColor, children }: any) {
+  const accentClasses: any = {
+    emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+    blue: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+    amber: "bg-amber-500/10 border-amber-500/20 text-amber-400",
+    indigo: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400",
+    rose: "bg-rose-500/10 border-rose-500/20 text-rose-400",
+    slate: "bg-slate-500/10 border-slate-500/20 text-slate-400",
+  };
+
+  return (
+    <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl transition-all hover:bg-slate-900/60">
+      <div className="p-5 border-b border-slate-800/50 flex items-center gap-4">
+        <div className={cn("p-3 rounded-xl border shrink-0", accentClasses[accentColor])}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-white tracking-tight leading-none mb-1">{title}</h3>
+          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em]">{subtitle}</p>
+        </div>
+      </div>
+      <CardContent className="p-6">{children}</CardContent>
+    </Card>
+  );
+}
+
+function FormFieldInput({ name, label, control, ...props }: any) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</FormLabel>
+          <FormControl>
+            <Input 
+              {...field} 
+              {...props} 
+              value={field.value ?? ''}
+              className={cn(
+                "bg-slate-950/40 border-slate-800 h-12 rounded-xl text-white px-4 focus:ring-emerald-500/20 placeholder:text-slate-700 text-sm",
+                props.className
+              )} 
+            />
+          </FormControl>
+          <FormMessage className="text-[10px] font-bold uppercase text-rose-500" />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function FormFieldTextarea({ name, label, control, ...props }: any) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</FormLabel>
+          <FormControl>
+            <Textarea 
+              {...field} 
+              {...props} 
+              value={field.value ?? ''}
+              className="bg-slate-950/40 border-slate-800 min-h-[100px] rounded-2xl p-5 text-white placeholder:text-slate-700" 
+            />
+          </FormControl>
+          <FormMessage className="text-[10px] font-bold uppercase text-rose-500" />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function FormFieldSelect({ name, label, options, control }: any) {
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</FormLabel>
+          <Select onValueChange={field.onChange} value={field.value?.toString()}>
+            <FormControl>
+              <SelectTrigger className="bg-slate-950/40 border-slate-800 h-12 rounded-xl px-4 text-white text-sm">
+                <SelectValue placeholder={`Pilih ${label}`} />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 rounded-xl">
+              {options.map((opt: any) => (
+                <SelectItem key={opt.id} value={opt.id.toString()} className="focus:bg-emerald-500/10 focus:text-emerald-400 text-xs">
+                  {opt.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FormMessage className="text-[10px] font-bold uppercase text-rose-500" />
+        </FormItem>
+      )}
+    />
   );
 }

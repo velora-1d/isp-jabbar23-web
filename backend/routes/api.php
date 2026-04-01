@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', function () {
     return response()->json(['status' => 'ok', 'timestamp' => now()]);
 });
-Route::get('/public-analytics', [AnalyticsController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected Routes
@@ -77,10 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin Features (CRM Migration)
     Route::prefix('admin')->group(function () {
-        // Analytics (Temporary bypass role 403)
-        Route::get('/analytics', [AnalyticsController::class, 'index']);
-
         Route::middleware('role:admin|super_admin')->group(function () {
+            // Analytics
+            Route::get('/analytics', [AnalyticsController::class, 'index']);
+            
             Route::get('/customers/form-data', [AdminCustomerController::class, 'formData']);
         Route::get('/customers', [AdminCustomerController::class, 'index']);
         Route::post('/customers', [AdminCustomerController::class, 'store']);

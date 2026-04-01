@@ -33,6 +33,7 @@ class Customer extends Model
     ];
 
     protected $fillable = [
+        'tenant_id',
         'customer_id',
         'name',
         'phone',
@@ -47,20 +48,23 @@ class Customer extends Model
         'latitude',
         'longitude',
         'package_id',
-        'partner_id',
-        'assigned_to',
-        'team_size',
         'status',
         'installation_date',
         'billing_date',
         'notes',
+        'assigned_to',
+        'team_size',
         'payment_token',
+        'partner_id',
         'router_id',
         'pppoe_username',
         'pppoe_password',
+        'pppoe_profile',
         'mikrotik_ip',
         'olt_id',
         'onu_index',
+        'ktp_number',
+        'odp_port',
     ];
 
     protected $casts = [
@@ -69,6 +73,11 @@ class Customer extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'team_size' => 'integer',
+        'package_id' => 'integer',
+        'partner_id' => 'integer',
+        'assigned_to' => 'integer',
+        'router_id' => 'integer',
+        'olt_id' => 'integer',
     ];
 
     /**
@@ -228,7 +237,10 @@ class Customer extends Model
      */
     public function getQrCodeAttribute(): string
     {
-        return \SimpleSoftwareIO\QrCode\Facades\QrCode::size(200)
+        /** @var \SimpleSoftwareIO\QrCode\Generator $generator */
+        $generator = \SimpleSoftwareIO\QrCode\Facades\QrCode::getFacadeRoot();
+        
+        return $generator->size(200)
             ->backgroundColor(255, 255, 255)
             ->color(30, 41, 59)
             ->generate($this->payment_token);

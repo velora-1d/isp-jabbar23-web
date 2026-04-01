@@ -161,23 +161,33 @@ export default function DashboardPage() {
     return (
         <div className="p-4 md:p-6 space-y-4 max-w-[1600px] mx-auto">
 
-            {/* ── Header ────────────────────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-                        Mission Control
+            {/* ── Welcome Header ────────────────────────────────────────────── */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent p-6 rounded-3xl border border-emerald-500/10 backdrop-blur-xl mb-6">
+                <div className="space-y-1">
+                    <div className="flex items-center space-x-2 text-emerald-400 font-bold tracking-tighter text-xs uppercase">
+                        <Zap className="w-3 h-3 animate-pulse" />
+                        <span>System Operational</span>
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white">
+                        Halo, <span className="text-emerald-500">JABBAR23</span> Admin
                     </h1>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
-                        {getDateRangeLabel(filters)} · {activeJenisLabel}
+                    <p className="text-sm text-slate-400 font-medium">
+                        Selamat datang kembali. Berikut adalah ringkasan performa jaringan hari ini.
                     </p>
                 </div>
-                <button
-                    onClick={() => refetch()}
-                    className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-400 bg-white/[0.03] border border-white/5 rounded-lg hover:bg-white/[0.06] hover:text-white transition-all active:scale-95"
-                >
-                    <RefreshCw className="h-3 w-3" />
-                    Refresh
-                </button>
+                <div className="flex items-center gap-3">
+                    <div className="hidden md:block text-right pr-4 border-r border-slate-800">
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mb-1">Status Server</p>
+                        <p className="text-xs text-emerald-400 font-mono font-bold">STABLE 99.9%</p>
+                    </div>
+                    <button
+                        onClick={() => refetch()}
+                        className="flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest text-white bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
+                    >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Refresh Data
+                    </button>
+                </div>
             </div>
 
             {/* ── Category Tab Switcher — FULL WIDTH ────────────────────────── */}

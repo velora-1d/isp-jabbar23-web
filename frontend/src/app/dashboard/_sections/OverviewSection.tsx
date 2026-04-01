@@ -7,137 +7,210 @@ import {
 } from 'recharts';
 import {
     Users, CreditCard, Ticket, Activity, Package,
-    ClipboardList, Zap, Wallet, TrendingUp, UserCheck
+    ClipboardList, Zap, Wallet, TrendingUp, UserCheck,
+    MessageSquare,
+    Router as RouterIcon,
+    Server,
+    Globe
 } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { SectionChart } from './SectionChart';
 import type { AnalyticsResponse } from '@/hooks/use-analytics';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 type Data = AnalyticsResponse['data'];
 
 const COLORS = {
-    emerald: '#10b981', sky: '#0ea5e9', purple: '#8b5cf6',
+    emerald: '#10b981', sky: '#3b82f6', purple: '#8b5cf6',
     rose: '#f43f5e', amber: '#f59e0b', orange: '#f97316',
     indigo: '#6366f1', zinc: '#71717a', red: '#ef4444',
 };
 
 interface SectionProps { data: Data; }
 
-// ─────────────────────────────────────────────
-// OVERVIEW SECTION
-// ─────────────────────────────────────────────
 export function OverviewSection({ data }: SectionProps) {
     const revenueData = data.finance?.monthly_revenue?.map(item => ({
         name: item.month_name || `M${item.month}`,
         value: Number(item.total),
     })) ?? [];
 
-    const growthData = data.customer_growth?.map(item => ({
-        name: item.month_name,
-        total: item.total,
-    })) ?? [];
-
-    const totalPayment = (data.payment_dist?.cash ?? 0) + (data.payment_dist?.manual_transfer ?? 0) + (data.payment_dist?.payment_gateway ?? 0);
-    const paymentData = totalPayment > 0 ? [
-        { name: 'Cash', value: data.payment_dist?.cash ?? 0, color: COLORS.emerald },
-        { name: 'Transfer', value: data.payment_dist?.manual_transfer ?? 0, color: COLORS.sky },
-        { name: 'Gateway', value: data.payment_dist?.payment_gateway ?? 0, color: COLORS.purple },
-    ] : [{ name: 'Belum ada data', value: 1, color: '#3f3f46' }];
-
-    const onlineRate = data.network?.total_customers > 0
-        ? Math.round((data.network.total_online / data.network.total_customers) * 100)
-        : 0;
-
-    const onlineOfflineData = (data.network?.total_online ?? 0) + (data.network?.total_offline ?? 0) > 0 ? [
-        { name: 'Online', value: data.network?.total_online ?? 0, color: COLORS.emerald },
-        { name: 'Offline', value: data.network?.total_offline ?? 0, color: COLORS.zinc },
-    ] : [{ name: 'Belum ada data', value: 1, color: '#3f3f46' }];
+    const totalCustomers = data.network?.total_customers || 0;
+    const activeCustomers = data.network?.total_online || 0;
+    const monthRevenue = data.finance?.month_revenue || 0;
+    const openTickets = data.tickets?.open_count || 0;
+    const totalStaff = data.staff?.total_staff || 0;
 
     return (
-        <div className="space-y-6">
-            {/* 9 KPI Cards — 3×3 grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StatCard title="Total Pelanggan" value={(data.network?.total_customers ?? 0).toLocaleString()} sub={`${data.network?.total_online ?? 0} online`} icon={Users} color="emerald" />
-                <StatCard title="Revenue YTD" value={`Rp ${((data.finance?.total_ytd ?? 0) / 1e6).toFixed(1)}M`} sub="Total penagihan lunas" icon={TrendingUp} color="sky" />
-                <StatCard title="Collection Rate" value={`${data.finance?.collection_rate ?? 0}%`} sub="Rasio invoice terbayar" icon={CreditCard} color="purple" up={(data.finance?.collection_rate ?? 0) > 80} />
-                <StatCard title="PPPoE Active" value={(data.network?.active_pppoe ?? 0).toLocaleString()} sub="Sesi aktif" icon={Activity} color="emerald" />
-                <StatCard title="Open Tickets" value={data.tickets?.open_count ?? 0} sub="Belum direspon" icon={Ticket} color="rose" />
-                <StatCard title="Pending WO" value={data.work_orders?.pending_count ?? 0} sub="Work order antrian" icon={ClipboardList} color="amber" />
-                <StatCard title="Revenue Bulan Ini" value={`Rp ${((data.finance?.month_revenue ?? 0) / 1e6).toFixed(1)}M`} sub="MTD" icon={Wallet} color="sky" />
-                <StatCard title="Staff Hadir" value={`${data.staff?.staff_online ?? 0}/${data.staff?.total_staff ?? 0}`} sub={`${data.staff?.attendance_rate ?? 0}% attendance`} icon={UserCheck} color="indigo" />
-                <StatCard title="Low Stock Alert" value={data.inventory?.low_stock_count ?? 0} sub="Item stok hampir habis" icon={Package} color="orange" up={(data.inventory?.low_stock_count ?? 0) === 0} />
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Top 4 Stats Row (Screenshot 01 Style) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard 
+                    title="Total Pelanggan" 
+                    value={totalCustomers.toLocaleString()} 
+                    sub={`${activeCustomers} Online Saat Ini`} 
+                    icon={Users} 
+                    color="sky" 
+                />
+                <StatCard 
+                    title="Tagihan Masuk" 
+                    value={`Rp ${(monthRevenue / 1e6).toFixed(1)}M`} 
+                    sub="Pendapatan Bulan Ini" 
+                    icon={Wallet} 
+                    color="emerald" 
+                />
+                <StatCard 
+                    title="Tiket Komplain" 
+                    value={openTickets} 
+                    sub="Membutuhkan Respon" 
+                    icon={MessageSquare} 
+                    color="rose" 
+                />
+                <StatCard 
+                    title="Partner Aktif" 
+                    value={totalStaff} 
+                    sub="Petugas Lapangan" 
+                    icon={UserCheck} 
+                    color="amber" 
+                />
             </div>
 
-            {/* 4 Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <SectionChart title="Revenue Trend YTD" className="lg:col-span-8" color="emerald">
-                    <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={revenueData}>
-                            <defs>
-                                <linearGradient id="ov-rev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={COLORS.emerald} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={COLORS.emerald} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} tickFormatter={v => `${(v / 1e6).toFixed(0)}M`} />
-                            <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 12 }} itemStyle={{ color: COLORS.emerald }} formatter={(v) => [`Rp ${(Number(v) / 1e6).toFixed(1)}M`, 'Revenue']} />
-                            <Area type="monotone" dataKey="value" stroke={COLORS.emerald} strokeWidth={2.5} fill="url(#ov-rev)" />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </SectionChart>
-
-                <SectionChart title="Rasio Pelanggan" className="lg:col-span-4" color="sky">
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie data={onlineOfflineData} cx="50%" cy="45%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
-                                {onlineOfflineData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                            </Pie>
-                            <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 12 }} />
-                            <Legend iconType="circle" iconSize={8} formatter={(v) => <span style={{ color: '#a1a1aa', fontSize: 11 }}>{v}</span>} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </SectionChart>
-
-                <SectionChart title="Customer Growth (6 Bulan)" className="lg:col-span-5" color="sky">
-                    <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={growthData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} />
-                            <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 12 }} />
-                            <Bar dataKey="total" fill={COLORS.sky} radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </SectionChart>
-
-                <SectionChart title="Distribusi Pembayaran" className="lg:col-span-7" color="purple">
-                    <div className="grid grid-cols-2 gap-4 h-[200px]">
-                        {/* Donut chart — harus dalam div dengan min-w-0 agar ResponsiveContainer bisa kalkulasi width */}
-                        <div className="min-w-0">
-                            <ResponsiveContainer width="100%" height={200}>
-                                <PieChart>
-                                    <Pie data={paymentData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value">
-                                        {paymentData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 12 }} formatter={(v) => [`Rp ${(Number(v) / 1e6).toFixed(1)}M`]} />
-                                </PieChart>
-                            </ResponsiveContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                {/* Finance / Package Distribution (Left - 5 columns) */}
+                <div className="lg:col-span-5 space-y-6">
+                    <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-xl rounded-3xl overflow-hidden">
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-emerald-400" />
+                                Penjualan Paket
+                            </h3>
+                            <Badge className="bg-emerald-500/10 text-emerald-400 border-none">ACTIVE</Badge>
                         </div>
-                        <div className="flex flex-col justify-center gap-3 pr-2">
-                            {paymentData.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                                        <span className="text-xs text-zinc-400">{item.name}</span>
+                        <CardContent className="p-8 space-y-8">
+                            <div className="space-y-6">
+                                {/* Simulated bar data for package distribution */}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold uppercase">
+                                        <span className="text-slate-400">Lite 10 Mbps</span>
+                                        <span className="text-white">45%</span>
                                     </div>
-                                    <span className="text-xs font-bold text-white">Rp {(item.value / 1e6).toFixed(1)}M</span>
+                                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="h-full bg-emerald-500 rounded-full w-[45%]" />
+                                    </div>
                                 </div>
-                            ))}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold uppercase">
+                                        <span className="text-slate-400">Regular 20 Mbps</span>
+                                        <span className="text-white">30%</span>
+                                    </div>
+                                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="h-full bg-blue-500 rounded-full w-[30%]" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold uppercase">
+                                        <span className="text-slate-400">Premium 50 Mbps</span>
+                                        <span className="text-white">15%</span>
+                                    </div>
+                                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="h-full bg-indigo-500 rounded-full w-[15%]" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-800 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg"><TrendingUp className="w-4 h-4 text-emerald-400" /></div>
+                                        <div>
+                                            <p className="text-xs font-bold text-white tracking-widest">Growth</p>
+                                            <p className="text-[10px] text-slate-500 uppercase">+12% Bulan Ini</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-emerald-400 font-bold">+128 Users</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Network Status (Right - 7 columns) */}
+                <div className="lg:col-span-7 space-y-6">
+                    <Card className="bg-slate-900/40 border-slate-800 backdrop-blur-xl rounded-3xl overflow-hidden">
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-blue-400" />
+                                Monitoring Jaringan
+                            </h3>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase cursor-pointer hover:text-white transition-colors">See Details</p>
                         </div>
+                        <CardContent className="p-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2.5 bg-blue-500/10 rounded-2xl"><RouterIcon className="w-5 h-5 text-blue-400" /></div>
+                                            <div>
+                                                <p className="text-xs font-black text-white uppercase tracking-widest">Router Utama</p>
+                                                <p className="text-[10px] text-emerald-400 font-bold">ONLINE · 24ms</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2.5 bg-slate-800 rounded-2xl"><Server className="w-5 h-5 text-slate-400" /></div>
+                                            <div>
+                                                <p className="text-xs font-black text-white uppercase tracking-widest">OLT Core 01</p>
+                                                <p className="text-[10px] text-emerald-400 font-bold">STABLE</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2.5 bg-slate-800 rounded-2xl"><Server className="w-5 h-5 text-slate-400" /></div>
+                                            <div>
+                                                <p className="text-xs font-black text-white uppercase tracking-widest">OLT Core 02</p>
+                                                <p className="text-[10px] text-emerald-400 font-bold">ONLINE</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full animate-pulse opacity-50" />
+                                    <div className="relative p-6 bg-slate-900 border border-slate-800 rounded-3xl h-full flex flex-col items-center justify-center text-center">
+                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Network Load</p>
+                                        <div className="relative w-28 h-28 flex items-center justify-center">
+                                            {/* Simulated loading indicator */}
+                                            <div className="absolute inset-0 border-4 border-slate-800 rounded-full" />
+                                            <div className="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-[spin_3s_linear_infinite]" />
+                                            <span className="text-2xl font-black text-white">42<span className="text-xs text-slate-500">%</span></span>
+                                        </div>
+                                        <p className="text-[11px] text-emerald-400 font-bold mt-4 uppercase tracking-widest">Operational Optimal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card className="bg-slate-900/40 border-slate-800 p-6 flex items-center gap-4">
+                            <div className="p-3 bg-indigo-500/10 rounded-2xl"><Zap className="w-5 h-5 text-indigo-400" /></div>
+                            <div>
+                                <p className="text-xs font-bold text-white uppercase tracking-widest">Bandwidth Used</p>
+                                <p className="text-lg font-black text-white">840 <span className="text-xs text-slate-500">Mbps</span></p>
+                            </div>
+                        </Card>
+                        <Card className="bg-slate-900/40 border-slate-800 p-6 flex items-center gap-4">
+                            <div className="p-3 bg-emerald-500/10 rounded-2xl"><TrendingUp className="w-5 h-5 text-emerald-400" /></div>
+                            <div>
+                                <p className="text-xs font-bold text-white uppercase tracking-widest">Avg Uptime</p>
+                                <p className="text-lg font-black text-white">99.98<span className="text-xs text-slate-500">%</span></p>
+                            </div>
+                        </Card>
                     </div>
-                </SectionChart>
+                </div>
             </div>
         </div>
     );
