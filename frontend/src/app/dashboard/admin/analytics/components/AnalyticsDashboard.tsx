@@ -36,7 +36,8 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 export function AnalyticsDashboard() {
-  const { data, isLoading } = useAnalytics();
+  const { data: response, isLoading } = useAnalytics();
+  const data = response?.data;
 
   if (isLoading) {
     return (
@@ -55,9 +56,9 @@ export function AnalyticsDashboard() {
   }
 
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
-  const revenueData = data?.finance?.monthly_revenue?.map((item: any) => ({
-    name: monthNames[parseInt(item.month) - 1],
-    total: parseFloat(item.total)
+  const revenueData = data?.finance?.monthly_revenue?.map((item) => ({
+    name: monthNames[parseInt(String(item.month)) - 1],
+    total: parseFloat(String(item.total))
   })) || [];
 
   const containerVariants = {

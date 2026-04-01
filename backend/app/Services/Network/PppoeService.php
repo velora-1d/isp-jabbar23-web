@@ -140,7 +140,7 @@ class PppoeService
                 ->set('user', $router->username)
                 ->set('pass', $router->password)
                 ->set('port', $router->port ?? 8728)
-                ->set('timeout', 5);
+                ->set('timeout', 2);
 
             $client = new Client($config);
             $query = new Query("/ppp/active/print");

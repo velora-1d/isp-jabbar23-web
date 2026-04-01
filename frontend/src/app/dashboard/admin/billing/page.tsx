@@ -166,7 +166,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-3 w-full md:w-auto">
               <Select 
                 value={filters.status} 
-                onValueChange={(v: string) => setFilters({ ...filters, status: v || "all" })}
+                onValueChange={(v) => setFilters({ ...filters, status: v || "all" })}
               >
                 <SelectTrigger className="w-full md:w-[180px] h-11 border-white/5 bg-zinc-900/40 rounded-xl focus:ring-emerald-500/50">
                   <div className="flex items-center gap-2 text-zinc-300">
