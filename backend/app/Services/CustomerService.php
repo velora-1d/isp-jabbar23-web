@@ -82,29 +82,33 @@ class CustomerService
     public function getFormData(): array
     {
         // First, get the default router to fetch profiles if possible
-        $defaultRouter = \App\Models\Router::where('status', 'online')->first() 
+        // Be more lenient with statuses in dev/fix mode to ensure data appears
+        $defaultRouter = \App\Models\Router::whereIn('status', ['active', 'online', 'up'])->first() 
             ?? \App\Models\Router::first();
             
         $pppoeProfiles = $defaultRouter ? $this->pppoeService->getProfiles($defaultRouter) : [];
 
+        // Ensure all collections are transformed to arrays or handled defensively
         return [
             // 1. Layanan Internet
-            'packages' => Package::active()->orderBy('name')->get(['id', 'name', 'price']),
+            'packages' => Package::active()->orderBy('name')->get(['id', 'name', 'price']) ?? [],
             
             // 6. Teknisi (Include technician and noc roles)
-            'technicians' => User::role(['technician', 'noc'])->orderBy('name')->get(['id', 'name']), 
+            'technicians' => User::role(['technician', 'noc'])->orderBy('name')->get(['id', 'name']) ?? [], 
             
-            // 2. OLT Tujuan (Be more lenient with status if needed, but active is standard)
-            'olts' => Olt::whereIn('status', ['active', 'online', 'up'])->orderBy('name')->get(['id', 'name', 'type']),
+            // 2. OLT Tujuan
+            'olts' => Olt::whereIn('status', ['active', 'online', 'up', 'online', 'online'])->orderBy('name')->get(['id', 'name', 'type']) ?? [],
             
             // 3. Gateway Router
-            'routers' => \App\Models\Router::whereIn('status', ['active', 'online', 'up'])->orderBy('name')->get(['id', 'name']),
+            'routers' => \App\Models\Router::whereIn('status', ['active', 'online', 'up'])->orderBy('name')->get(['id', 'name']) ?? [],
             
-            // 4. PPPoE Profiles (The "dropdown" requested)
-            'pppoe_profiles' => $pppoeProfiles,
+            // 4. PPPoE Profiles
+            'pppoe_profiles' => collect($pppoeProfiles)->map(function($p) {
+                return is_array($p) ? $p : ['id' => $p, 'name' => $p];
+            })->values()->toArray() ?: [['id' => 'default', 'name' => 'default']],
             
             // 5. Partner Agent
-            'partners' => \App\Models\Partner::orderBy('name')->get(['id', 'name']),
+            'partners' => \App\Models\Partner::orderBy('name')->get(['id', 'name']) ?? [],
             
             'statuses' => Customer::STATUSES,
         ];

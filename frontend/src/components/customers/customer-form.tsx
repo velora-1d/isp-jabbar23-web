@@ -40,7 +40,9 @@ import {
   Globe,
   Settings,
   HardDrive,
-  Users
+  Users,
+  Router as RouterIcon,
+  UserCheck
 } from 'lucide-react';
 import { useCustomerFormData } from '@/hooks/use-customers';
 import { toast } from 'sonner';
@@ -206,28 +208,30 @@ export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormP
                 <FormFieldSelect 
                   name="olt_id" 
                   label="OLT Tujuan" 
-                  options={formData?.olts.map(o => ({ id: o.id.toString(), name: o.name })) || []} 
+                  options={(formData?.olts || []).map(o => ({ id: o.id.toString(), name: o.name }))} 
                   control={form.control} 
                 />
               </div>
-              <FormFieldInput name="odp_port" label="Port ODP" placeholder="1" control={form.control} />
-              <FormFieldInput name="onu_index" label="ONU Index" placeholder="1/1/1" control={form.control} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormFieldInput name="odp_port" label="ODP Port" placeholder="1-16" control={form.control} />
+                <FormFieldInput name="onu_index" label="ONU Index" placeholder="1/1/1" control={form.control} />
+              </div>
             </div>
           </SectionCard>
 
           {/* Section 5: Mikrotik Config */}
-          <SectionCard title="Konfigurasi MikroTik" subtitle="Akses PPPoE & IP Management" icon={Activity} accentColor="rose">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SectionCard title="Mikrotik & Network" icon={RouterIcon} accentColor="rose">
+            <div className="grid md:grid-cols-2 gap-6">
               <FormFieldSelect 
                 name="router_id" 
                 label="Gateway Router" 
-                options={formData?.routers.map(r => ({ id: r.id.toString(), name: r.name })) || []} 
+                options={(formData?.routers || []).map(r => ({ id: r.id.toString(), name: r.name }))} 
                 control={form.control} 
               />
               <FormFieldSelect 
                 name="pppoe_profile" 
                 label="Profile PPPoE" 
-                options={formData?.pppoe_profiles || []} 
+                options={(formData?.pppoe_profiles || []).map(p => ({ id: p, name: p }))} 
                 control={form.control} 
               />
               <FormFieldInput name="pppoe_username" label="PPPoE User / Secret" placeholder="user.jabbar" control={form.control} />
@@ -239,18 +243,18 @@ export function CustomerForm({ initialData, onSubmit, isLoading }: CustomerFormP
           </SectionCard>
 
           {/* Section 6: Management */}
-          <SectionCard title="Administrasi & PIC" subtitle="Delegasi Tugas" icon={Settings} accentColor="slate">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SectionCard title="Assignment & Partner" icon={UserCheck} accentColor="slate">
+            <div className="grid md:grid-cols-2 gap-6">
               <FormFieldSelect 
-                name="partner_id" 
-                label="Partner / Agen" 
-                options={formData?.partners.map(p => ({ id: p.id.toString(), name: p.name })) || []} 
+                name="assigned_to" 
+                label="Teknisi Instalasi" 
+                options={(formData?.technicians || []).map(t => ({ id: t.id.toString(), name: t.name }))} 
                 control={form.control} 
               />
               <FormFieldSelect 
-                name="assigned_to" 
-                label="Teknisi" 
-                options={formData?.technicians.map(t => ({ id: t.id.toString(), name: t.name })) || []} 
+                name="partner_id" 
+                label="Partner Agent" 
+                options={(formData?.partners || []).map(p => ({ id: p.id.toString(), name: p.name }))} 
                 control={form.control} 
               />
               <FormFieldInput name="team_size" label="Jumlah Tim" placeholder="1" control={form.control} type="number" />

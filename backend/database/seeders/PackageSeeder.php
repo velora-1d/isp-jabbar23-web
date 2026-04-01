@@ -12,6 +12,7 @@ class PackageSeeder extends Seeder
     {
         $packages = [
             [
+                'tenant_id' => '00000000-0000-0000-0000-000000000000',
                 'name' => '10 Mbps Home',
                 'speed_up' => 10,
                 'speed_down' => 10,
@@ -20,6 +21,7 @@ class PackageSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'tenant_id' => '00000000-0000-0000-0000-000000000000',
                 'name' => '20 Mbps Streamer',
                 'speed_up' => 20,
                 'speed_down' => 20,
@@ -28,6 +30,7 @@ class PackageSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'tenant_id' => '00000000-0000-0000-0000-000000000000',
                 'name' => '50 Mbps Pro',
                 'speed_up' => 50,
                 'speed_down' => 50,
@@ -36,6 +39,7 @@ class PackageSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'tenant_id' => '00000000-0000-0000-0000-000000000000',
                 'name' => '100 Mbps Ultimate',
                 'speed_up' => 100,
                 'speed_down' => 100,
