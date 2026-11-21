@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "ISP Jabbar",
+    "version": "1.0.0",
+    "identifier": "com.velora.ispjabbar",
+    "build": {
+        "frontendDist": "../src"
+    },
+    "app": {
+        "withGlobalTauri": false,
+        "windows": [
+            {
+                "title": "ISP Jabbar Dashboard",
+                "width": 1280,
+                "height": 800,
+                "url": "https://jabbardash.ve-lora.my.id",
+                "resizable": true,
+                "fullscreen": false
+            }
+        ],
+        "security": {
+            "csp": null
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ]
+    }
+}
