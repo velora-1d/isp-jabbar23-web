@@ -1,0 +1,17 @@
+.git
+node_modules
+vendor
+storage/*.key
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.yml
+compose.yaml
+docker-compose.override.yml
+compose.override.yaml
+railway_status_tmp*.json
